@@ -1,0 +1,66 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env
+.env.*
+.env*.local
+
+# vercel
+.vercel
+
+# local AI/tool configs
+.claude/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local project data
+/skills/
+/data/*
+!/data/persones_network/
+/data/persones_network/*
+!/data/persones_network/top250_active_operacions.csv
+
+# BORME extraction and local processing (keep local-only)
+/borme-dataset/
+/scripts/__pycache__/
+/scripts/borme_*.py
+/scripts/borme_turso_import.py
+/scripts/borme_turso_import.mjs
+/scripts/calc_active_period_operacions.py
+/public/borme/
+/tmp/borme/
+/data/borme/
+
+.vercel

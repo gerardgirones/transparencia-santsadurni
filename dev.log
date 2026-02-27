@@ -1,0 +1,231 @@
+
+> contractes-cat@0.1.0 dev C:\Users\giroge\OneDrive - Henkell Freixenet Group\Escritorio\Antigravity\Contractacio\contractes-cat-variant
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://100.101.225.27:3000
+
+✓ Starting...
+⚠ Turbopack's filesystem cache has been deleted because we previously detected an internal error in Turbopack. Builds or page loads may be slower as a result.
+✓ Ready in 1289ms
+○ Compiling / ...
+ GET / 200 in 5.0s (compile: 3.4s, render: 1614ms)
+ GET /transparencia 200 in 11.7s (compile: 1269ms, render: 10.5s)
+ GET / 200 in 936ms (compile: 12ms, render: 924ms)
+ GET /transparencia 200 in 518ms (compile: 7ms, render: 511ms)
+ GET /transparencia?retribYear=2027 200 in 551ms (compile: 9ms, render: 542ms)
+ GET /transparencia?retribYear=2024 200 in 533ms (compile: 11ms, render: 522ms)
+ GET /transparencia?retribYear=2027 200 in 606ms (compile: 9ms, render: 597ms)
+ GET /transparencia?retribYear=2024 200 in 571ms (compile: 9ms, render: 562ms)
+✓ Compiled in 96ms
+✓ Compiled in 131ms
+✓ Compiled in 202ms
+✓ Compiled in 86ms
+ GET /transparencia 200 in 2.5s (compile: 148ms, render: 2.4s)
+ GET /transparencia?retribYear=2024 200 in 1797ms (compile: 14ms, render: 1784ms)
+ GET /transparencia?retribYear=2024 200 in 1441ms (compile: 42ms, render: 1399ms)
+ GET /transparencia?retribYear=2024 200 in 1034ms (compile: 41ms, render: 993ms)
+ GET /transparencia?retribYear=2024 200 in 600ms (compile: 38ms, render: 562ms)
+ GET /transparencia?retribYear=2024 200 in 989ms (compile: 8ms, render: 980ms)
+ GET / 200 in 477ms (compile: 10ms, render: 468ms)
+ GET /transparencia?retribYear=2024 200 in 8.7s (compile: 8ms, render: 8.7s)
+ GET /empreses 200 in 1253ms (compile: 662ms, render: 591ms)
+BORME Turso config missing: set TURSO_URL and TURSO_TOKEN (or TURSO_AUTH_TOKEN).
+ GET /persones 200 in 1136ms (compile: 659ms, render: 477ms)
+ GET /organismes 200 in 1111ms (compile: 554ms, render: 557ms)
+ GET /contractes 200 in 798ms (compile: 561ms, render: 237ms)
+ GET /transparencia 200 in 576ms (compile: 6ms, render: 569ms)
+ GET /transparencia?retribYear=2024 200 in 483ms (compile: 9ms, render: 473ms)
+ GET /transparencia?retribYear=2027 200 in 441ms (compile: 5ms, render: 437ms)
+ GET /transparencia?retribYear=2027 200 in 665ms (compile: 8ms, render: 657ms)
+ GET /transparencia?retribYear=2024 200 in 483ms (compile: 6ms, render: 477ms)
+ GET /transparencia?retribYear=2023 200 in 641ms (compile: 8ms, render: 633ms)
+ GET /transparencia?retribYear=2023 200 in 853ms (compile: 146ms, render: 707ms)
+ GET /transparencia?retribYear=2023 200 in 816ms (compile: 141ms, render: 674ms)
+ GET /transparencia?retribYear=2023 200 in 3.9s (compile: 134ms, render: 3.8s)
+ GET /transparencia?retribYear=2023 404 in 4.6s (compile: 615ms, render: 4.0s)
+ GET /transparencia?retribYear=2023 200 in 4.5s (compile: 209ms, render: 4.3s)
+✓ Compiled in 138ms
+✓ Compiled in 106ms
+ GET /transparencia?retribYear=2023 200 in 1438ms (compile: 204ms, render: 1234ms)
+ GET /transparencia?retribYear=2023 404 in 1825ms (compile: 291ms, render: 1534ms)
+ GET /transparencia?retribYear=2023 200 in 2.0s (compile: 132ms, render: 1873ms)
+✓ Compiled in 96ms
+ GET /transparencia?retribYear=2023 200 in 2.9s (compile: 122ms, render: 2.7s)
+ GET /transparencia?retribYear=2023 200 in 2.1s (compile: 49ms, render: 2.1s)
+ GET /transparencia?retribYear=2023 200 in 2.1s (compile: 41ms, render: 2.0s)
+ GET /transparencia?retribYear=2023 200 in 1711ms (compile: 26ms, render: 1685ms)
+ GET /transparencia?retribYear=2023 200 in 1299ms (compile: 31ms, render: 1268ms)
+ GET /transparencia?retribYear=2023 200 in 957ms (compile: 31ms, render: 926ms)
+ GET /transparencia?retribYear=2023 200 in 404ms (compile: 32ms, render: 372ms)
+✓ Compiled in 89ms
+ GET /transparencia?retribYear=2023 200 in 447ms (compile: 7ms, render: 441ms)
+✓ Compiled in 128ms
+ GET /transparencia?retribYear=2023 200 in 395ms (compile: 5ms, render: 390ms)
+✓ Compiled in 103ms
+⨯ ReferenceError: visibleEconomicRightsBreakdown is not defined
+    at TransparenciaPage (src\app\transparencia\page.tsx:319:18)
+  317 |               </thead>
+  318 |               <tbody>
+> 319 |                 {visibleEconomicRightsBreakdown.map((row, idx) => (
+      |                  ^
+  320 |                   <tr key={`${row.url}-${idx}`} className="border-b border-gray-100 align-top last:border-b-0">
+  321 |                     <td className="py-2 pr-2 text-gray-700">
+  322 |                       <a href={row.url} target="_blank" rel="noopener noreferrer" className="underline"> {
+  digest: '717612629'
+}
+ GET /transparencia?retribYear=2023 200 in 598ms (compile: 144ms, render: 454ms)
+⨯ ReferenceError: visibleEconomicRightsBreakdown is not defined
+    at TransparenciaPage (src\app\transparencia\page.tsx:318:18)
+  316 |               </thead>
+  317 |               <tbody>
+> 318 |                 {visibleEconomicRightsBreakdown.map((row, idx) => (
+      |                  ^
+  319 |                   <tr key={`${row.url}-${idx}`} className="border-b border-gray-100 align-top last:border-b-0">
+  320 |                     <td className="py-2 pr-2 text-gray-700">
+  321 |                       <a href={row.url} target="_blank" rel="noopener noreferrer" className="underline"> {
+  digest: '3698710612'
+}
+ GET /transparencia?retribYear=2023 200 in 558ms (compile: 138ms, render: 420ms)
+ GET /transparencia?retribYear=2023 200 in 686ms (compile: 137ms, render: 549ms)
+ GET /transparencia?retribYear=2023 200 in 805ms (compile: 162ms, render: 642ms)
+ GET /transparencia?retribYear=2023 200 in 753ms (compile: 184ms, render: 568ms)
+ GET /api/subvencions?page=1 200 in 4.6s (compile: 995ms, render: 3.6s)
+ GET /subvencions 200 in 4.8s (compile: 586ms, render: 4.2s)
+ GET /transparencia 200 in 2.1s (compile: 5ms, render: 2.1s)
+ GET /transparencia?retribYear=2023 200 in 716ms (compile: 170ms, render: 547ms)
+ GET /subvencions 200 in 87ms (compile: 8ms, render: 79ms)
+✓ Compiled in 116ms
+ GET /subvencions 200 in 515ms (compile: 156ms, render: 360ms)
+ GET /subvencions 404 in 998ms (compile: 386ms, render: 612ms)
+ GET /subvencions 200 in 640ms (compile: 236ms, render: 403ms)
+ GET /api/subvencions?year=2&page=1 200 in 60ms (compile: 45ms, render: 15ms)
+ GET /api/subvencions?year=20&page=1 200 in 16ms (compile: 4ms, render: 12ms)
+ GET /api/subvencions?year=202&page=1 200 in 17ms (compile: 4ms, render: 13ms)
+ GET /api/subvencions?year=2024&page=1 200 in 16ms (compile: 4ms, render: 12ms)
+ GET /api/subvencions?year=202&page=1 200 in 16ms (compile: 5ms, render: 11ms)
+ GET /api/subvencions?year=2025&page=1 200 in 14ms (compile: 4ms, render: 10ms)
+ GET /api/subvencions?year=202&page=1 200 in 13ms (compile: 5ms, render: 9ms)
+ GET /api/subvencions?year=2026&page=1 200 in 15ms (compile: 3ms, render: 11ms)
+ GET /api/subvencions?year=202&page=1 200 in 13ms (compile: 4ms, render: 9ms)
+ GET /api/subvencions?year=2025&page=1 200 in 13ms (compile: 3ms, render: 10ms)
+ GET /api/subvencions?year=202&page=1 200 in 13ms (compile: 4ms, render: 8ms)
+ GET /api/subvencions?year=20&page=1 200 in 14ms (compile: 5ms, render: 9ms)
+ GET /api/subvencions?year=202&page=1 200 in 12ms (compile: 4ms, render: 9ms)
+ GET /api/subvencions?year=2022&page=1 200 in 16ms (compile: 5ms, render: 11ms)
+ GET /api/subvencions?year=202&page=1 200 in 17ms (compile: 6ms, render: 11ms)
+ GET /api/subvencions?year=2023&page=1 200 in 16ms (compile: 4ms, render: 12ms)
+✓ Compiled in 99ms
+ GET /subvencions?year=2023 200 in 57ms (compile: 5ms, render: 53ms)
+ GET /api/subvencions?year=202&page=1 200 in 13ms (compile: 4ms, render: 9ms)
+ GET /api/subvencions?year=2024&page=1 200 in 13ms (compile: 4ms, render: 9ms)
+ GET /persones 404 in 117ms (compile: 9ms, render: 108ms)
+ GET /subvencions 200 in 139ms (compile: 11ms, render: 129ms)
+ GET /api/subvencions?year=202&page=1 200 in 14ms (compile: 5ms, render: 9ms)
+ GET /api/subvencions?year=20&page=1 200 in 14ms (compile: 5ms, render: 9ms)
+ GET /api/subvencions?year=2&page=1 200 in 21ms (compile: 9ms, render: 12ms)
+ GET /api/subvencions?page=1 200 in 17ms (compile: 5ms, render: 12ms)
+ GET /empreses 200 in 265ms (compile: 172ms, render: 94ms)
+ GET /organismes 200 in 237ms (compile: 148ms, render: 89ms)
+ GET /contractes 200 in 254ms (compile: 170ms, render: 85ms)
+ GET /api/contractes?year=2015&page=1 200 in 892ms (compile: 191ms, render: 701ms)
+ GET /api/contractes?year=2016&page=1 200 in 148ms (compile: 4ms, render: 144ms)
+✓ Compiled in 98ms
+ GET /api/contractes?year=2017&page=1 200 in 153ms (compile: 3ms, render: 150ms)
+ GET /api/contractes?year=2018&page=1 200 in 164ms (compile: 3ms, render: 161ms)
+ GET /api/contractes?page=1 200 in 15ms (compile: 4ms, render: 11ms)
+ GET /subvencions 200 in 523ms (compile: 172ms, render: 351ms)
+ GET /api/contractes?tipus_contracte=Administratiu+especial&page=1 200 in 883ms (compile: 3ms, render: 880ms)
+ GET /api/contractes?tipus_contracte=Serveis&page=1 200 in 423ms (compile: 3ms, render: 419ms)
+ GET /api/contractes?page=1 200 in 14ms (compile: 4ms, render: 10ms)
+ GET /subvencions 200 in 55ms (compile: 5ms, render: 50ms)
+ GET /transparencia 200 in 937ms (compile: 208ms, render: 729ms)
+ GET /analisi 200 in 1937ms (compile: 859ms, render: 1078ms)
+ GET /transparencia 200 in 503ms (compile: 7ms, render: 496ms)
+ GET /transparencia 200 in 1156ms (compile: 167ms, render: 988ms)
+ GET /transparencia 200 in 459ms (compile: 48ms, render: 411ms)
+ GET /transparencia 200 in 1263ms (compile: 153ms, render: 1110ms)
+ GET /transparencia 200 in 531ms (compile: 37ms, render: 494ms)
+ GET /transparencia 200 in 1383ms (compile: 162ms, render: 1220ms)
+ GET /transparencia 200 in 551ms (compile: 33ms, render: 518ms)
+ GET /transparencia 200 in 1525ms (compile: 178ms, render: 1347ms)
+ GET /transparencia 200 in 672ms (compile: 44ms, render: 628ms)
+ GET /transparencia 200 in 1263ms (compile: 175ms, render: 1088ms)
+ GET /transparencia 200 in 493ms (compile: 42ms, render: 451ms)
+✓ Compiled in 90ms
+ GET /transparencia 200 in 446ms (compile: 5ms, render: 441ms)
+✓ Compiled in 98ms
+ GET /transparencia 200 in 2.7s (compile: 7ms, render: 2.7s)
+ GET /transparencia 200 in 730ms (compile: 5ms, render: 725ms)
+ GET /transparencia 200 in 1162ms (compile: 143ms, render: 1019ms)
+ GET /transparencia 200 in 464ms (compile: 39ms, render: 425ms)
+ GET /transparencia 200 in 901ms (compile: 158ms, render: 743ms)
+ GET /subvencions 200 in 3.2s (compile: 169ms, render: 3.1s)
+ GET /transparencia 200 in 2.8s (compile: 18ms, render: 2.8s)
+ GET /transparencia 200 in 869ms (compile: 6ms, render: 863ms)
+ GET /transparencia 200 in 9.1s (compile: 15ms, render: 9.1s)
+✓ Compiled in 118ms
+⨯ ReferenceError: buildTransparencyHref is not defined
+    at TransparenciaPage (src\app\transparencia\page.tsx:127:21)
+  125 |           <div className="flex flex-wrap items-center gap-2 text-xs">
+  126 |             <Link
+> 127 |               href={buildTransparencyHref({ retribYear: "" })}
+      |                     ^
+  128 |               className={`rounded-full border px-3 py-1 ${
+  129 |                 selectedRetribYear ? "border-indigo-300 bg-white text-indigo-900 hover:bg-indigo-100" : "border-indigo-700 bg-indigo-700 text-white"
+  130 |               }`} {
+  digest: '902166908'
+}
+ GET /transparencia 200 in 490ms (compile: 166ms, render: 324ms)
+ GET /transparencia 200 in 677ms (compile: 186ms, render: 491ms)
+ GET /transparencia 200 in 1018ms (compile: 161ms, render: 857ms)
+ GET /transparencia 200 in 524ms (compile: 28ms, render: 496ms)
+ GET /transparencia 200 in 555ms (compile: 163ms, render: 392ms)
+ GET /subvencions 200 in 2.4s (compile: 219ms, render: 2.1s)
+ GET /transparencia 200 in 1839ms (compile: 16ms, render: 1823ms)
+ GET /transparencia 200 in 888ms (compile: 7ms, render: 881ms)
+✓ Compiled in 112ms
+ GET /transparencia 200 in 555ms (compile: 37ms, render: 518ms)
+ GET /transparencia 200 in 1213ms (compile: 276ms, render: 937ms)
+ GET /transparencia 200 in 812ms (compile: 6ms, render: 806ms)
+ GET /transparencia 200 in 736ms (compile: 263ms, render: 472ms)
+ GET /transparencia 200 in 1854ms (compile: 6ms, render: 1848ms)
+ GET /transparencia 200 in 762ms (compile: 275ms, render: 487ms)
+ GET /transparencia 200 in 707ms (compile: 258ms, render: 449ms)
+ GET /transparencia 200 in 1953ms (compile: 8ms, render: 1945ms)
+ GET /transparencia 200 in 780ms (compile: 5ms, render: 775ms)
+ GET /transparencia 200 in 1250ms (compile: 284ms, render: 966ms)
+ GET /transparencia 200 in 580ms (compile: 42ms, render: 538ms)
+ GET /transparencia 200 in 467ms (compile: 29ms, render: 438ms)
+ GET /transparencia 200 in 1246ms (compile: 378ms, render: 869ms)
+ GET /transparencia 200 in 4.3s (compile: 342ms, render: 4.0s)
+ GET /transparencia 200 in 2.0s (compile: 5ms, render: 2.0s)
+ GET /analisi 200 in 241ms (compile: 12ms, render: 229ms)
+✓ Compiled in 157ms
+ GET /analisi 200 in 181ms (compile: 5ms, render: 176ms)
+✓ Compiled in 136ms
+ GET /analisi 200 in 419ms (compile: 8ms, render: 410ms)
+ GET /analisi 200 in 159ms (compile: 7ms, render: 152ms)
+ GET /transparencia 200 in 2.3s (compile: 297ms, render: 2.0s)
+ GET /transparencia 200 in 525ms (compile: 6ms, render: 519ms)
+ GET /transparencia 200 in 4.4s (compile: 306ms, render: 4.1s)
+ GET /transparencia 200 in 438ms (compile: 5ms, render: 433ms)
+ GET /transparencia 200 in 5.0s (compile: 7ms, render: 5.0s)
+ GET /transparencia 200 in 5.4s (compile: 8ms, render: 5.4s)
+ GET /transparencia 200 in 4.6s (compile: 6ms, render: 4.6s)
+ GET /transparencia 200 in 4.3s (compile: 12ms, render: 4.3s)
+ GET /transparencia 200 in 3.9s (compile: 24ms, render: 3.9s)
+ GET /transparencia 200 in 1312ms (compile: 5ms, render: 1306ms)
+ GET /transparencia 200 in 2.7s (compile: 319ms, render: 2.4s)
+ GET /transparencia 200 in 929ms (compile: 307ms, render: 622ms)
+ GET /transparencia 200 in 2.4s (compile: 5ms, render: 2.4s)
+ GET /transparencia 200 in 1028ms (compile: 381ms, render: 648ms)
+ GET /transparencia 200 in 1386ms (compile: 330ms, render: 1055ms)
+ GET /transparencia 200 in 587ms (compile: 48ms, render: 539ms)
+ GET /transparencia 200 in 2.3s (compile: 5ms, render: 2.3s)
+ GET /transparencia 200 in 919ms (compile: 6ms, render: 914ms)
+ GET /transparencia 200 in 7.8s (compile: 7ms, render: 7.8s)
+ GET /transparencia 200 in 1400ms (compile: 5ms, render: 1395ms)
+ GET /transparencia 200 in 887ms (compile: 308ms, render: 579ms)
+ GET /transparencia 200 in 947ms (compile: 309ms, render: 638ms)
