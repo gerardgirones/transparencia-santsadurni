@@ -27,16 +27,16 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-24 md:h-28">
+        <div className="flex items-center justify-between h-20 md:h-24">
           <Link href="/" prefetch className="flex items-center shrink-0">
-            <span className="block h-[5.2rem] w-[13rem] overflow-hidden md:h-[6.5rem] md:w-[16rem]">
+            <span className="block h-14 w-[220px] md:h-16 md:w-[260px]">
               <Image
                 src="/logo-landing-v2.png"
                 alt={SITE_NAME}
                 width={320}
                 height={180}
                 priority
-                className="h-full w-full scale-[1.55] object-cover object-center"
+                className="h-full w-full object-contain object-left"
               />
             </span>
           </Link>
