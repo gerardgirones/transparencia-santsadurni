@@ -5,7 +5,13 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/config/constants";
+import {
+  GITHUB_URL,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  SOCRATA_DATASET_URL,
+} from "@/config/constants";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,9 +48,47 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
   other: {
     "twitter:domain": "transparenciasantsadurni.cat",
   },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: SITE_DESCRIPTION,
+      inLanguage: "ca-ES",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "Transparència Sant Sadurní",
+      url: SITE_URL,
+      sameAs: [GITHUB_URL],
+    },
+    {
+      "@type": "Dataset",
+      "@id": `${SITE_URL}/#dataset-contractacio`,
+      name: "Contractació pública i transparència de Sant Sadurní d'Anoia",
+      description:
+        "Dataset agregat per a consulta ciutadana de contractes, subvencions, organismes i indicadors de transparència municipal.",
+      url: `${SITE_URL}/transparencia`,
+      inLanguage: "ca-ES",
+      isAccessibleForFree: true,
+      creator: { "@id": `${SITE_URL}/#organization` },
+      license: "https://creativecommons.org/licenses/by/4.0/",
+      isBasedOn: [SOCRATA_DATASET_URL],
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -57,6 +101,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

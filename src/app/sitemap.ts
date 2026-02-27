@@ -17,6 +17,7 @@ const STATIC_ROUTES = [
   "/comunitat",
   "/donacions",
   "/contacte",
+  "/faq",
   "/empreses",
   "/organismes",
   "/legal",

@@ -6,17 +6,21 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { SITE_NAME } from "@/config/constants";
 
-const NAV_ITEMS = [
+const PRIMARY_NAV_ITEMS = [
   { href: "/", label: "Inici" },
   { href: "/empreses", label: "Empreses" },
   { href: "/subvencions", label: "Subvencions" },
-  { href: "/organismes", label: "Organismes" },
   { href: "/contractes", label: "Contractes" },
   { href: "/transparencia", label: "Transparència" },
+  { href: "/organismes", label: "Organismes" },
   { href: "/comunitat", label: "Comunitat" },
-  { href: "/donacions", label: "Donacions" },
+];
+
+const CONTACT_MENU_ITEMS = [
   { href: "/contacte", label: "Contacte" },
+  { href: "/donacions", label: "Donacions" },
   { href: "/analisi", label: "Anàlisi" },
+  { href: "/faq", label: "FAQ" },
   { href: "/about", label: "Sobre" },
 ];
 
@@ -43,7 +47,7 @@ export default function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center h-full gap-1">
-            {NAV_ITEMS.map((item) => {
+            {PRIMARY_NAV_ITEMS.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/" && pathname.startsWith(`${item.href}/`));
@@ -67,6 +71,42 @@ export default function Header() {
                 </Link>
               );
             })}
+
+            <div className="group relative h-full">
+              <button
+                className={`relative px-4 py-2 text-sm transition-colors h-full ${
+                  CONTACT_MENU_ITEMS.some(
+                    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  )
+                    ? "text-indigo-600 font-semibold"
+                    : "text-gray-500 font-medium hover:text-gray-900"
+                }`}
+                type="button"
+              >
+                Contacte
+                <span className="ml-1">▾</span>
+              </button>
+
+              <div className="invisible absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-md border border-gray-200 bg-white p-1 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
+                {CONTACT_MENU_ITEMS.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      prefetch
+                      className={`block rounded px-3 py-2 text-sm ${
+                        isActive
+                          ? "bg-indigo-50 text-indigo-700 font-semibold"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
 
           {/* Mobile menu button */}
@@ -88,10 +128,32 @@ export default function Header() {
         {/* Mobile nav */}
         {mobileOpen && (
           <nav className="md:hidden pb-4 space-y-1">
-            {NAV_ITEMS.map((item) => {
+            {PRIMARY_NAV_ITEMS.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  prefetch
+                  onClick={() => setMobileOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm ${
+                    isActive
+                      ? "text-indigo-600 font-semibold bg-indigo-50 border-l-[3px] border-indigo-500"
+                      : "text-gray-500 font-medium hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            <div className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+              Contacte
+            </div>
+            {CONTACT_MENU_ITEMS.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
