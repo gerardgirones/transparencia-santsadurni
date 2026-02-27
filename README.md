@@ -2,6 +2,16 @@
 
 Anàlisi independent de la contractació pública a Catalunya.
 
+## Context del lloc (instància actual)
+
+- Domini públic: `https://transparenciasantsadurni.cat`
+- Àmbit principal: **Sant Sadurní d'Anoia**
+- Comarca: **Alt Penedès** (Barcelona)
+- Administració principal: **Ajuntament de Sant Sadurní d'Anoia**
+- Codi ENS de referència: `824010007`
+
+En aquesta instància, l'experiència i els filtres es prioritzen per dades del municipi de Sant Sadurní d'Anoia.
+
 **Aquesta no és una web oficial del govern.** Les dades provenen de la [Plataforma de Transparència de Catalunya](https://analisi.transparenciacatalunya.cat) i es mostren amb finalitat informativa.
 
 ## Funcionalitats
