@@ -1,12 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async redirects() {
+  async rewrites() {
     return [
       {
         source: "/sitemap.xml",
-        destination: "/sitemap/0.xml",
-        permanent: true,
+        destination: "/sitemap-feed",
       },
     ];
   },

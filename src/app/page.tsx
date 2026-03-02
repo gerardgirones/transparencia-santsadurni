@@ -28,9 +28,9 @@ import { safeJsonLd } from "@/lib/seo/jsonld";
 import { SITE_NAME, SITE_URL } from "@/config/constants";
 
 export const metadata: Metadata = {
-  title: "Contractació pública i transparència a Sant Sadurní d'Anoia",
+  title: "Transparència Sant Sadurní d'Anoia | Contractes, Subvencions i Organismes",
   description:
-    "Consulta contractes públics i dades de transparència municipal de Sant Sadurní d'Anoia per empresa, organisme i persona.",
+    "Consulta la contractació pública de Sant Sadurní d'Anoia: contractes, subvencions, organismes i indicadors de transparència municipal amb dades oficials.",
   keywords: [
     "contractes públics Catalunya",
     "contractació pública Catalunya",
@@ -43,9 +43,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Contractació pública i transparència a Sant Sadurní d'Anoia",
+    title: "Transparència Sant Sadurní d'Anoia | Contractes, Subvencions i Organismes",
     description:
-      "Consulta contractes públics i adjudicacions municipals de Sant Sadurní d'Anoia per empresa, organisme i subvencions.",
+      "Consulta la contractació pública de Sant Sadurní d'Anoia: contractes, subvencions, organismes i indicadors de transparència municipal amb dades oficials.",
     url: SITE_URL,
     siteName: SITE_NAME,
     type: "website",
@@ -60,9 +60,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contractació pública i transparència a Sant Sadurní d'Anoia",
+    title: "Transparència Sant Sadurní d'Anoia | Contractes, Subvencions i Organismes",
     description:
-      "Consulta contractes públics i adjudicacions municipals de Sant Sadurní d'Anoia.",
+      "Consulta la contractació pública de Sant Sadurní d'Anoia: contractes, subvencions, organismes i indicadors de transparència municipal amb dades oficials.",
     images: ["/social-card-v2.png"],
   },
 };
