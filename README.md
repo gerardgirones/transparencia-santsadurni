@@ -1,4 +1,4 @@
-# contractes.cat
+# transaprenciasantsadurn.cat
 
 Anàlisi independent de la contractació pública a Catalunya.
 
