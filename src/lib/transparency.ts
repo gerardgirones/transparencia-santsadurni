@@ -598,17 +598,35 @@ function parseOfficialDetail(html: string): {
   documentRetribucioUrl?: string;
 } {
   const lines = htmlToTextLines(html);
-  const roleLine =
-    lines.find((line) => {
-      const folded = normalizeFoldedText(line);
-      return (
-        folded.includes("alcald") ||
-        folded.includes("regidor") ||
-        folded.includes("tinent") ||
-        folded.includes("portaveu") ||
-        folded.includes("carrec")
-      );
-    }) || "Carrec public";
+  const candidateLines = lines.filter((line) => {
+    const folded = normalizeFoldedText(line);
+    return (
+      folded.includes("alcald") ||
+      folded.includes("regidor") ||
+      folded.includes("tinent") ||
+      folded.includes("portaveu") ||
+      folded.includes("carrec")
+    );
+  });
+
+  // Prioritize by importance to avoid picking generic breadcrumbs or category headers
+  let roleLine = "Carrec public";
+  if (candidateLines.length > 0) {
+    const prioritized = candidateLines.sort((a, b) => {
+      const fa = normalizeFoldedText(a);
+      const fb = normalizeFoldedText(b);
+      const score = (f: string) => {
+        if (f.includes("alcald")) return 4;
+        if (f.includes("tinent")) return 3;
+        if (f.includes("portaveu")) return 2;
+        if (f.includes("regidor")) return 1;
+        return 0;
+      };
+      return score(fb) - score(fa);
+    });
+    // Filter out very short generic plural headers like "Regidors" or "Alts càrrecs"
+    roleLine = prioritized.find(l => l.length > 3 && !/^regidors$/i.test(l) && !/alts càrrecs/i.test(l)) || prioritized[0];
+  }
 
   const partyLine = lines.find((line) => {
     const folded = normalizeFoldedText(line);
@@ -1487,8 +1505,8 @@ export async function fetchTransparencySummary(): Promise<TransparencySummary> {
   const currentBudgetYear = budgetLines.length > 0 ? Math.max(...budgetLines.map((r) => r.year)) : undefined;
   const currentBudgetAmount = currentBudgetYear
     ? budgetLines
-        .filter((r) => r.year === currentBudgetYear && r.tipus === "D" && r.nivell === 1)
-        .reduce((acc, r) => acc + r.amount, 0)
+      .filter((r) => r.year === currentBudgetYear && r.tipus === "D" && r.nivell === 1)
+      .reduce((acc, r) => acc + r.amount, 0)
     : undefined;
 
   return {

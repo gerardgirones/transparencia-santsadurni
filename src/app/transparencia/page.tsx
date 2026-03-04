@@ -75,11 +75,18 @@ function normalizeName(value: string): string {
 }
 
 function normalizeRoleForDisplay(role: string): string {
-  const normalized = role.toLowerCase();
-  if (normalized.includes("alcald")) return "Alcalde/ssa";
-  if (normalized.includes("tinent")) return "Tinent d'alcaldia / regidor/a";
-  if (normalized.includes("regidor")) return role;
-  return "Regidor/a";
+  // Removes common prefixes from scraped content
+  let cleanRole = role.replace(/^(C[àa]rrec|C[àa]rrec\s*:|Nom\s*:|Carrecs\s*:)\s*/i, "").trim();
+  const lowerClean = cleanRole.toLowerCase();
+
+  if (lowerClean === "alcalde" || lowerClean === "alcaldessa") return "Alcalde/ssa";
+  if (lowerClean.includes("tinent")) return cleanRole;
+  if (lowerClean.includes("regidor")) {
+    if (lowerClean === "regidor" || lowerClean === "regidora") return "Regidor/a";
+    return cleanRole;
+  }
+  if (cleanRole === "Carrec public") return "Regidor/a";
+  return cleanRole || "Regidor/a";
 }
 
 function isVerifiedCcapOfficial(normalizedName: string): boolean {
@@ -401,13 +408,12 @@ export default async function TransparenciaPage({ searchParams }: Props) {
                   <td className="px-3 py-2 font-medium text-gray-900">{row.year}</td>
                   <td className="px-3 py-2 text-xs">
                     <span
-                      className={`rounded-full px-2 py-0.5 ${
-                        row.status === "publicat"
+                      className={`rounded-full px-2 py-0.5 ${row.status === "publicat"
                           ? "bg-emerald-100 text-emerald-800"
                           : row.status === "cobert"
                             ? "bg-amber-100 text-amber-800"
                             : "bg-sky-100 text-sky-800"
-                      }`}
+                        }`}
                     >
                       {row.status}
                     </span>
@@ -440,9 +446,8 @@ export default async function TransparenciaPage({ searchParams }: Props) {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-semibold text-gray-900">{row.organism}</p>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs ${
-                    row.status === "verificable" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                  }`}
+                  className={`rounded-full px-2 py-0.5 text-xs ${row.status === "verificable" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                    }`}
                 >
                   {row.status}
                 </span>

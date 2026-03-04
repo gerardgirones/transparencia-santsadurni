@@ -149,6 +149,7 @@ export default function SubvencionsExplorer({
                 value={filters.year}
                 onChange={(e) => handleFilterChange("year", e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5"
+                aria-label="Filtrar per any"
               >
                 <option value="">Tots</option>
                 {yearOptions.map((year) => (
@@ -160,20 +161,44 @@ export default function SubvencionsExplorer({
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">Text</label>
-              <input value={filters.search} onChange={(e) => handleFilterChange("search", e.target.value)} placeholder="Titol o paraula" className="w-full rounded-md border border-gray-300 px-2 py-1.5" />
+              <input
+                value={filters.search}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+                placeholder="Titol o paraula"
+                className="w-full rounded-md border border-gray-300 px-2 py-1.5"
+                aria-label="Cerca per text"
+              />
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">Beneficiari</label>
-              <input value={filters.beneficiari} onChange={(e) => handleFilterChange("beneficiari", e.target.value)} placeholder="Nom entitat" className="w-full rounded-md border border-gray-300 px-2 py-1.5" />
+              <input
+                value={filters.beneficiari}
+                onChange={(e) => handleFilterChange("beneficiari", e.target.value)}
+                placeholder="Nom entitat"
+                className="w-full rounded-md border border-gray-300 px-2 py-1.5"
+                aria-label="Cerca per beneficiari"
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="mb-1 block text-xs text-gray-500">Import min.</label>
-                <input value={filters.amountMin} onChange={(e) => handleFilterChange("amountMin", e.target.value)} placeholder="0" className="w-full rounded-md border border-gray-300 px-2 py-1.5" />
+                <input
+                  value={filters.amountMin}
+                  onChange={(e) => handleFilterChange("amountMin", e.target.value)}
+                  placeholder="0"
+                  className="w-full rounded-md border border-gray-300 px-2 py-1.5"
+                  aria-label="Import mínim"
+                />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-gray-500">Import max.</label>
-                <input value={filters.amountMax} onChange={(e) => handleFilterChange("amountMax", e.target.value)} placeholder="50000" className="w-full rounded-md border border-gray-300 px-2 py-1.5" />
+                <input
+                  value={filters.amountMax}
+                  onChange={(e) => handleFilterChange("amountMax", e.target.value)}
+                  placeholder="50000"
+                  className="w-full rounded-md border border-gray-300 px-2 py-1.5"
+                  aria-label="Import màxim"
+                />
               </div>
             </div>
             <button onClick={handleReset} className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100">
@@ -204,8 +229,8 @@ export default function SubvencionsExplorer({
           </div>
         </div>
 
-        <div className={`overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm ${loading ? "opacity-50" : ""}`}>
-          <table className="w-full text-sm">
+        <div className={`overflow-x-auto rounded-lg border border-gray-100 bg-white shadow-sm ${loading ? "opacity-50" : ""}`}>
+          <table className="w-full min-w-[600px] text-sm">
             <thead>
               <tr className="border-b border-gray-200 text-left text-gray-500">
                 <th className="px-3 py-2">Data</th>
