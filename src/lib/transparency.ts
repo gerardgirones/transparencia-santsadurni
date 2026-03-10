@@ -1455,12 +1455,12 @@ export async function fetchAgreements(limit = 50): Promise<TransparencyAgreement
   }));
 }
 
-export async function fetchPlenaryMinutes(limit = 30): Promise<TransparencyPlenaryMinute[]> {
+export async function fetchPlenaryMinutes(limit = 30, offset = 0): Promise<TransparencyPlenaryMinute[]> {
   const { records } = await ckanFetch(
     AOC_RESOURCE_IDS.plenaryMinutes,
     { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) },
     limit,
-    0,
+    offset,
     "DATA_ACORD desc"
   );
   return records.map((row) => {
@@ -1472,6 +1472,16 @@ export async function fetchPlenaryMinutes(limit = 30): Promise<TransparencyPlena
       codiActa: toStringValue(row.CODI_ACTA),
     };
   });
+}
+
+export async function fetchPlenaryMinutesCount(): Promise<number> {
+  const { total } = await ckanFetch(
+    AOC_RESOURCE_IDS.plenaryMinutes,
+    { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) },
+    1,
+    0
+  );
+  return total;
 }
 
 export async function fetchTransparencySummary(): Promise<TransparencySummary> {
