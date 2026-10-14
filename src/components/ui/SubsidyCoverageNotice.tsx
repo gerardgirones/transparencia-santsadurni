@@ -1,5 +1,6 @@
 import { OFFICIAL_SOURCES } from "@/config/constants";
 import { formatDate } from "@/lib/utils";
+import Link from "next/link";
 
 interface Props {
   coverage: { latestGrantDate: string | null; currentYear: number; totalRecords: number };
@@ -17,14 +18,14 @@ export default function SubsidyCoverageNotice({ coverage }: Props) {
       {missingCurrentYear && (
         <p className="mt-2">
           La font consultada encara no inclou concessions de {coverage.currentYear}. Això no permet afirmar
-          que l’Ajuntament no hagi atorgat subvencions aquest any. Les convocatòries i els ajuts previstos
-          es publiquen separadament de les concessions.
+          que no hi hagi subvencions aquest any. Consulta també les convocatòries publicades a la BDNS.
         </p>
       )}
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+        <Link href="/subvencions?view=convocatories" className="font-medium underline">Veure convocatòries de {coverage.currentYear} (BDNS)</Link>
         <a href={OFFICIAL_SOURCES.subsidiesGranted} target="_blank" rel="noopener noreferrer" className="underline">Concessions al portal oficial</a>
         <a href={OFFICIAL_SOURCES.subsidiesCalls} target="_blank" rel="noopener noreferrer" className="underline">Convocatòries de subvencions</a>
-        <a href="https://www.infosubvenciones.es/bdnstrans/GE/es/concesiones" target="_blank" rel="noopener noreferrer" className="underline">Consultar la BDNS</a>
+        <a href="https://www.subvenciones.gob.es/bdnstrans/GE/es/concesiones" target="_blank" rel="noopener noreferrer" className="underline">Concessions a la BDNS</a>
       </p>
     </div>
   );
