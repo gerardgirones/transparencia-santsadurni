@@ -115,6 +115,11 @@ export const MUNICIPAL_SCOPE_EXECUTION = "Sant Sadurní d'Anoia";
 export const SANT_SADURNI_CODI_ENS = "824010007";
 export const AOC_CKAN_BASE_URL = "https://dadesobertes.seu-e.cat/api/3/action/datastore_search";
 
+export const BDNS_API_URL = "https://www.subvenciones.gob.es/bdnstrans/api";
+export const BDNS_PORTAL_URL = "https://www.subvenciones.gob.es/bdnstrans/GE/es";
+// BDNS catalogue: AYUNTAMIENTO DE SANT SADURNÍ D'ANOIA (granting body).
+export const BDNS_MUNICIPAL_ORGAN_ID = "413";
+
 export const AOC_RESOURCE_IDS = {
   budgetByProgram: "595f8620-7a3c-4e38-8be2-7cffa744cd44",
   contracts: "7448c675-8880-464e-9980-1b92119e59c8",

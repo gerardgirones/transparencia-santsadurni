@@ -58,6 +58,26 @@ per evitar sumar de nou les mateixes despeses en la classificació econòmica.
 Si una font falla, el portal de transparència manté les altres seccions i marca
 les dades afectades com a no disponibles.
 
+### Connexió automàtica amb la BDNS
+
+La vista `/subvencions?view=convocatories` consulta l'API pública oficial de
+la BDNS (`https://www.subvenciones.gob.es/bdnstrans/api`). El filtre obligatori
+`organos=413` selecciona l'Ajuntament de Sant Sadurní d'Anoia com a concedent;
+no selecciona subvencions rebudes per l'Ajuntament.
+
+La cerca usa `/convocatorias/busqueda`, paginació de 20 elements i dates de
+registre `fechaDesde`/`fechaHasta`. El detall de cada convocatòria es consulta
+a `/convocatorias?numConv=...` per obtenir el pressupost previst i el procediment.
+No es barregen aquests pressupostos amb els imports de concessions.
+
+Les respostes es guarden en la memòria cau de Next.js durant sis hores. La
+revalidació es produeix a partir d'una nova visita, no mitjançant un procés
+programat en segon pla. Els detalls es consulten amb un màxim de quatre
+peticions simultànies i un termini global de 12 segons. Un detall que falla
+es marca com a no disponible sense ocultar la convocatòria.
+
+Documentació oficial: https://www.subvenciones.gob.es/bdnstrans/doc/swagger
+
 ### Variables d'entorn (BORME/Turso)
 
 Per mostrar l'històric d'administradors des de Turso (sense fitxers JSON estàtics), configura:
