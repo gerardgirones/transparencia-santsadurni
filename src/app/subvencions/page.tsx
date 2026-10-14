@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import SubvencionsExplorer from "./SubvencionsExplorer";
+import SubsidyCoverageNotice from "@/components/ui/SubsidyCoverageNotice";
 import {
   fetchSubsidiesAvailableYears,
   fetchSubsidiesExplorer,
   fetchSubsidiesRanking,
+  fetchSubsidiesCoverage,
 } from "@/lib/transparency";
 
 export const metadata: Metadata = {
@@ -35,10 +37,11 @@ export default async function SubvencionsPage({ searchParams }: Props) {
   const parsedPage = parseInt(params.page || "1", 10);
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  const [list, ranking, availableYears] = await Promise.all([
+  const [list, ranking, availableYears, coverage] = await Promise.all([
     fetchSubsidiesExplorer({ ...filters, page }),
     fetchSubsidiesRanking({ year: filters.year || undefined, search: filters.search || undefined }, 10),
     fetchSubsidiesAvailableYears(),
+    fetchSubsidiesCoverage(),
   ]);
 
   return (
@@ -48,6 +51,7 @@ export default async function SubvencionsPage({ searchParams }: Props) {
         Cercador i ranquing de subvencions municipals amb dades oficials de Sant Sadurni d&apos;Anoia.
       </p>
 
+      <SubsidyCoverageNotice coverage={coverage} />
       <SubvencionsExplorer
         initialFilters={filters}
         initialPage={page}

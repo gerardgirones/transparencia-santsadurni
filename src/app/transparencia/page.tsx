@@ -14,7 +14,10 @@ import {
   fetchSubsidies,
   fetchTransparencyContracts,
   fetchTransparencySummary,
+  fetchSubsidiesCoverage,
 } from "@/lib/transparency";
+import { loadData } from "@/lib/data-result";
+import SubsidyCoverageNotice from "@/components/ui/SubsidyCoverageNotice";
 import {
   fetchMinorBandSummary,
   fetchMinorShareYearly,
@@ -51,39 +54,56 @@ interface Props {
   searchParams?: Promise<Record<string, string | undefined>>;
 }
 
+function Unavailable({ failed }: { failed: boolean }) {
+  return failed ? <p role="status" className="my-3 text-sm text-amber-800">No s’han pogut carregar aquestes dades. Consulta la font oficial o torna-ho a provar més tard.</p> : null;
+}
+
 export default async function TransparenciaPage({ searchParams }: Props) {
   if (searchParams) await searchParams;
 
   const [
-    summary,
-    subsidies,
-    agreements,
-    contracts,
-    budgetLines,
-    plenaryMinutes,
-    minorBandSummary,
-    minorShareYearly,
-    topMinorRiskCompanies,
+    summaryResult,
+    subsidiesResult,
+    agreementsResult,
+    contractsResult,
+    budgetResult,
+    plenaryResult,
+    minorBandResult,
+    minorShareResult,
+    riskCompaniesResult,
+    coverageResult,
   ] =
     await Promise.all([
-      fetchTransparencySummary(),
-      fetchSubsidies(12),
-      fetchAgreements(12),
-      fetchTransparencyContracts(12),
-      fetchBudgetLines(12),
-      fetchPlenaryMinutes(12),
-      fetchMinorBandSummary(),
-      fetchMinorShareYearly(),
-      fetchTopCompaniesInMinorRiskBand(6),
+      loadData("resum de transparència", fetchTransparencySummary),
+      loadData("subvencions recents", () => fetchSubsidies(12)),
+      loadData("convenis recents", () => fetchAgreements(12)),
+      loadData("contractes recents", () => fetchTransparencyContracts(12)),
+      loadData("pressupost per programes", () => fetchBudgetLines(12)),
+      loadData("actes de ple", () => fetchPlenaryMinutes(12)),
+      loadData("concentració de menors", fetchMinorBandSummary),
+      loadData("evolució de menors", fetchMinorShareYearly),
+      loadData("empreses de la franja", () => fetchTopCompaniesInMinorRiskBand(6)),
+      loadData("cobertura de subvencions", fetchSubsidiesCoverage),
     ]);
 
+  const summary = summaryResult.data;
+  const subsidies = subsidiesResult.data || [];
+  const agreements = agreementsResult.data || [];
+  const contracts = contractsResult.data || [];
+  const budgetLines = budgetResult.data || [];
+  const plenaryMinutes = plenaryResult.data || [];
+  const minorBandSummary = minorBandResult.data;
+  const minorShareYearly = minorShareResult.data || [];
+  const topMinorRiskCompanies = riskCompaniesResult.data || [];
+
   const minorRiskShare =
-    minorBandSummary.total_minor_under_15k > 0
+    minorBandSummary && minorBandSummary.total_minor_under_15k > 0
       ? (minorBandSummary.risk_band_14900_15000 / minorBandSummary.total_minor_under_15k) * 100
       : 0;
 
   const yearlyMinorMap = new Map(minorShareYearly.map((row) => [Number(row.year), row]));
-  const completeMinorYears = Array.from({ length: 8 }, (_, idx) => 2018 + idx).map((year) => {
+  const lastCompleteYear = new Date().getFullYear() - 1;
+  const completeMinorYears = Array.from({ length: 8 }, (_, idx) => lastCompleteYear - 7 + idx).map((year) => {
     const row = yearlyMinorMap.get(year);
     return {
       year,
@@ -113,29 +133,32 @@ export default async function TransparenciaPage({ searchParams }: Props) {
       <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <article className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-gray-500">Contractes</p>
-          <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(summary.contractsTotal)}</p>
-          <p className="mt-1 text-xs text-gray-500">{formatCompactNumber(summary.contractsAmount)} acumulats</p>
+          <p className="mt-1 text-xl font-semibold text-gray-900">{summary?.contractsTotal != null ? formatNumber(summary.contractsTotal) : "No disponible"}</p>
+          <p className="mt-1 text-xs text-gray-500">{summary?.contractsAmount != null ? `${formatCompactNumber(summary.contractsAmount)} acumulats` : "Import no disponible"}</p>
         </article>
         <article className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-gray-500">Subvencions</p>
-          <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(summary.subsidiesTotal)}</p>
-          <p className="mt-1 text-xs text-gray-500">{formatCompactNumber(summary.subsidiesAmount)} concedits</p>
+          <p className="mt-1 text-xl font-semibold text-gray-900">{summary?.subsidiesTotal != null ? formatNumber(summary.subsidiesTotal) : "No disponible"}</p>
+          <p className="mt-1 text-xs text-gray-500">{summary?.subsidiesAmount != null ? `${formatCompactNumber(summary.subsidiesAmount)} concedits` : "Import no disponible"}</p>
         </article>
         <article className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-gray-500">Convenis</p>
-          <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(summary.agreementsTotal)}</p>
-          <p className="mt-1 text-xs text-gray-500">{formatCompactNumber(summary.agreementsAmount)} previstos</p>
+          <p className="mt-1 text-xl font-semibold text-gray-900">{summary?.agreementsTotal != null ? formatNumber(summary.agreementsTotal) : "No disponible"}</p>
+          <p className="mt-1 text-xs text-gray-500">{summary?.agreementsAmount != null ? `${formatCompactNumber(summary.agreementsAmount)} previstos` : "Import no disponible"}</p>
         </article>
         <article className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-gray-500">Pressupost</p>
           <p className="mt-1 text-xl font-semibold text-gray-900">
-            {summary.currentBudgetYear ? String(summary.currentBudgetYear) : "N/A"}
+            {summary?.currentBudgetYear ? String(summary.currentBudgetYear) : "No disponible"}
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            {summary.currentBudgetAmount ? formatCompactNumber(summary.currentBudgetAmount) : "Sense dada agregada"}
+            {summary?.currentBudgetAmount != null ? formatCompactNumber(summary.currentBudgetAmount) : "Sense dada agregada"}
           </p>
         </article>
       </section>
+
+      <Unavailable failed={summaryResult.unavailable || Boolean(summary?.unavailableSources.length)} />
+      {coverageResult.data && <SubsidyCoverageNotice coverage={coverageResult.data} />}
 
       <section className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <p className="font-semibold">Lectura responsable de les dades</p>
@@ -145,7 +168,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
         </p>
       </section>
 
-      <section className="mb-10 rounded-lg border border-rose-200 bg-rose-50/60 p-4">
+      {minorBandSummary && !minorShareResult.unavailable && !riskCompaniesResult.unavailable ? <section className="mb-10 rounded-lg border border-rose-200 bg-rose-50/60 p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-rose-900">Alertes ciutadanes de risc</h2>
           <Link href="/analisi" className="text-xs text-rose-800 underline hover:text-rose-900">
@@ -189,7 +212,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
         </div>
         <div className="mt-4 rounded-md border border-rose-200 bg-white p-3">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-rose-700">
-            Contractes menors per any (2018-2025)
+            Contractes menors per any ({lastCompleteYear - 7}-{lastCompleteYear})
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -212,11 +235,12 @@ export default async function TransparenciaPage({ searchParams }: Props) {
             </table>
           </div>
         </div>
-      </section>
+      </section> : <Unavailable failed />}
 
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Subvencions recents</h2>
+          <Unavailable failed={subsidiesResult.unavailable} />
           <div className="mt-3 space-y-3">
             {subsidies.map((s, idx) => (
               <article key={`${s.titol}-${idx}`} className="rounded-md border border-gray-100 p-3">
@@ -238,6 +262,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
 
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Convenis amb impacte economic</h2>
+          <Unavailable failed={agreementsResult.unavailable} />
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -272,6 +297,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Pressupost per programes (ultim exercici)</h2>
+          <Unavailable failed={budgetResult.unavailable} />
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -294,6 +320,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
 
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Actes de ple</h2>
+          <Unavailable failed={plenaryResult.unavailable} />
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -328,6 +355,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Contractes recents (PSCP)</h2>
+          <Unavailable failed={contractsResult.unavailable} />
           <div className="mt-3 space-y-3">
             {recentContracts.map((c, idx) => (
               <article key={`${c.codiExpedient}-${idx}`} className="rounded-md border border-gray-100 p-3">

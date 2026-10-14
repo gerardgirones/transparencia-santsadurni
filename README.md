@@ -39,6 +39,25 @@ pnpm dev
 
 Obre [http://localhost:3000](http://localhost:3000) al navegador.
 
+### Comprovacions
+
+Amb Node.js 24, executa `pnpm test`, `pnpm lint` i `pnpm build`.
+Les proves cobreixen els tipus dels filtres CKAN, la paginació completa,
+els imports decimals i la resposta del resum quan una font deixa de funcionar.
+
+### Cobertura de subvencions
+
+L'explorador mostra concessions publicades a l'AOC, sense limitar l'històric a
+2.500 registres. Indica la data de la darrera concessió disponible i avisa quan
+la font encara no conté dades de l'any en curs. L'absència de registres no
+demostra que no s'hagin concedit ajuts. Les convocatòries i els ajuts previstos
+s'han de consultar separadament a les fonts oficials enllaçades.
+
+El pressupost usa només les despeses de nivell 1 de la classificació funcional,
+per evitar sumar de nou les mateixes despeses en la classificació econòmica.
+Si una font falla, el portal de transparència manté les altres seccions i marca
+les dades afectades com a no disponibles.
+
 ### Variables d'entorn (BORME/Turso)
 
 Per mostrar l'històric d'administradors des de Turso (sense fitxers JSON estàtics), configura:
