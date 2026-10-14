@@ -165,6 +165,7 @@ async function soqlFetch<T>(params: Record<string, string>): Promise<T[]> {
 
   const res = await fetch(url.toString(), {
     next: { revalidate: REVALIDATE_SECONDS },
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!res.ok) {

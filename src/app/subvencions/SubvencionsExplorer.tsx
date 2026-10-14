@@ -37,11 +37,13 @@ export default function SubvencionsExplorer({
   const [total, setTotal] = useState(initialTotal);
   const [ranking, setRanking] = useState(initialRanking);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const yearOptions = initialYearOptions;
 
   const debounceRef = useRef<NodeJS.Timeout>(null);
   const abortRef = useRef<AbortController>(null);
+  const latestRequestRef = useRef(0);
 
   const buildQueryString = useCallback((f: typeof EMPTY_FILTERS, p: number) => {
     const params = new URLSearchParams();
@@ -64,11 +66,13 @@ export default function SubvencionsExplorer({
   );
 
   const fetchData = useCallback(async (f: typeof EMPTY_FILTERS, p: number) => {
+    const requestId = ++latestRequestRef.current;
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (f.year) params.set("year", f.year);
@@ -81,15 +85,17 @@ export default function SubvencionsExplorer({
       const res = await fetch(`/api/subvencions?${params.toString()}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`Failed to fetch subsidies: ${res.status}`);
       const json = await res.json();
+      if (requestId !== latestRequestRef.current) return;
       setData(json.data || []);
       setTotal(json.total || 0);
       setRanking(json.ranking || []);
     } catch (error) {
-      if ((error as Error).name !== "AbortError") {
+      if ((error as Error).name !== "AbortError" && requestId === latestRequestRef.current) {
         console.error("Subsidies fetch error:", error);
+        setError("No s’han pogut actualitzar les dades. Els resultats mostrats corresponen a la consulta anterior.");
       }
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestRef.current) setLoading(false);
     }
   }, []);
 
@@ -103,12 +109,12 @@ export default function SubvencionsExplorer({
   const handleFilterChange = useCallback(
     (key: keyof typeof EMPTY_FILTERS, value: string) => {
       const nextFilters = { ...filters, [key]: value };
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       setFilters(nextFilters);
       setPage(1);
       updateUrl(nextFilters, 1);
 
       if (key === "search" || key === "beneficiari" || key === "amountMin" || key === "amountMax") {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => fetchData(nextFilters, 1), 400);
       } else {
         fetchData(nextFilters, 1);
@@ -119,6 +125,7 @@ export default function SubvencionsExplorer({
 
   const handlePageChange = useCallback(
     (nextPage: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       setPage(nextPage);
       updateUrl(filters, nextPage);
       fetchData(filters, nextPage);
@@ -128,6 +135,7 @@ export default function SubvencionsExplorer({
   );
 
   const handleReset = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     setFilters(EMPTY_FILTERS);
     setPage(1);
     updateUrl(EMPTY_FILTERS, 1);
@@ -209,6 +217,12 @@ export default function SubvencionsExplorer({
       </aside>
 
       <div>
+        {error && (
+          <div role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <p>{error}</p>
+            <button onClick={() => fetchData(filters, page)} className="mt-2 underline">Tornar-ho a provar</button>
+          </div>
+        )}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-gray-500">{loading ? "Carregant..." : `${formatNumber(total)} subvencions trobades`}</p>
           <a href={`/api/subvencions?${exportParams.toString()}`} className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">

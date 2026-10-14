@@ -8,6 +8,8 @@ import {
 } from "@/config/constants";
 import { fetchTotalAmount, fetchTotalContracts } from "@/lib/api";
 import * as XLSX from "xlsx";
+import { cache } from "react";
+import { loadData } from "./data-result";
 
 type CkanRecord = Record<string, unknown>;
 
@@ -188,16 +190,16 @@ export interface EconomicRightsAnnualOverviewRow {
 }
 
 export interface TransparencySummary {
-  contractsTotal: number;
-  contractsAmount: number;
-  subsidiesTotal: number;
-  subsidiesAmount: number;
-  agreementsTotal: number;
-  agreementsAmount: number;
-  plenaryMinutesTotal: number;
+  contractsTotal: number | null;
+  contractsAmount: number | null;
+  subsidiesTotal: number | null;
+  subsidiesAmount: number | null;
+  agreementsTotal: number | null;
+  agreementsAmount: number | null;
+  plenaryMinutesTotal: number | null;
   currentBudgetYear?: number;
   currentBudgetAmount?: number;
-  officialsWithSalary: number;
+  unavailableSources: string[];
 }
 
 export interface PublishedSalaryYearRow {
@@ -493,7 +495,10 @@ function resolveTraceabilityLevel(score: number): TraceabilityLevel {
 function toNumber(value: unknown): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   if (typeof value !== "string") return 0;
-  const normalized = value.replace(/\./g, "").replace(",", ".").trim();
+  const trimmed = value.trim();
+  const normalized = trimmed.includes(",")
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -551,6 +556,7 @@ async function ckanFetch(
 
   const res = await fetch(url.toString(), {
     next: { revalidate: REVALIDATE_SECONDS },
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!res.ok) {
@@ -558,12 +564,47 @@ async function ckanFetch(
   }
 
   const json = (await res.json()) as CkanResponse;
-  if (!json.success || !json.result) return { records: [], total: 0 };
+  if (!json.success || !json.result) {
+    throw new Error("CKAN API returned an unsuccessful response");
+  }
   return {
     records: json.result.records || [],
     total: json.result.total || 0,
   };
 }
+
+// Read every page in a stable order; partial totals must never look complete.
+async function ckanFetchAll(
+  resourceId: string,
+  filters: Record<string, string | number>
+): Promise<CkanRecord[]> {
+  const records: CkanRecord[] = [];
+  let total = Infinity;
+  while (records.length < total) {
+    const page = await ckanFetch(resourceId, filters, 1000, records.length, "_id asc");
+    total = page.total;
+    if (page.records.length === 0 && records.length < total) {
+      throw new Error("CKAN API returned an incomplete dataset");
+    }
+    records.push(...page.records);
+  }
+  return records;
+}
+
+const fetchBudgetCatalog = cache(() =>
+  ckanFetchAll(AOC_RESOURCE_IDS.budgetByProgram, {
+    CODI_ENS: SANT_SADURNI_CODI_ENS,
+    TIPUS_PARTIDA: "D",
+    TIPUS_CLASSIF: "F",
+    NIVELL: "1",
+  })
+);
+
+const fetchAgreementsCatalog = cache(() =>
+  ckanFetchAll(AOC_RESOURCE_IDS.cooperationAgreements, {
+    CODI_ENS: Number(SANT_SADURNI_CODI_ENS),
+  })
+);
 
 function parseOfficialList(html: string): { id: string; nom: string; fitxaUrl: string }[] {
   const matches = html.matchAll(/<a[^>]+href="([^"]*\/veureCarrec\/(\d+)[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi);
@@ -1241,10 +1282,10 @@ export async function fetchOfficialsWithSalaries(limit = 30): Promise<OfficialSa
 export async function fetchTransparencyContracts(limit = 25): Promise<TransparencyContract[]> {
   const { records } = await ckanFetch(
     AOC_RESOURCE_IDS.contracts,
-    { CODI_INE10: Number(SANT_SADURNI_CODI_ENS) },
+    { CODI_INE10: SANT_SADURNI_CODI_ENS },
     limit,
     0,
-    "DATA_PUBLICACIO_ANUNCI desc"
+    "DATA_PUBLICACIO_ANUNCI desc nulls last, _id desc"
   );
   const mapped = records.map((row) => ({
     codiExpedient: toStringValue(row.CODI_EXPEDIENT),
@@ -1265,13 +1306,7 @@ export async function fetchTransparencyContracts(limit = 25): Promise<Transparen
 }
 
 export async function fetchBudgetLines(limit = 30): Promise<TransparencyBudgetLine[]> {
-  const { records } = await ckanFetch(
-    AOC_RESOURCE_IDS.budgetByProgram,
-    { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) },
-    1000,
-    0,
-    "ANY_EXERCICI desc"
-  );
+  const records = await fetchBudgetCatalog();
   const years = records.map((r) => Number(r.ANY_EXERCICI || 0)).filter((y) => y > 0);
   const latestYear = years.length > 0 ? Math.max(...years) : undefined;
   const filtered = records
@@ -1306,38 +1341,31 @@ export async function fetchSubsidies(limit = 50): Promise<TransparencySubsidy[]>
   }));
 }
 
-async function fetchSubsidiesCatalog(limit = 2500): Promise<SubsidyExplorerItem[]> {
-  const chunkSize = 1000;
-  let offset = 0;
-  let allRows: SubsidyExplorerItem[] = [];
+const fetchSubsidiesCatalog = cache(async (): Promise<SubsidyExplorerItem[]> => {
+  const records = await ckanFetchAll(AOC_RESOURCE_IDS.subsidiesGranted, {
+    CODI_ENS: Number(SANT_SADURNI_CODI_ENS),
+  });
+  return records.map((row) => {
+    const dataConcessio = toStringValue(row.DATA_DE_CONCESSIO);
+    return {
+      dataConcessio,
+      anyConcessio: parseYearFromDate(dataConcessio),
+      titol: toStringValue(row.TITOL),
+      beneficiari: toStringValue(row.BENEFICIARI),
+      import: toNumber(row.IMPORT),
+      basesReguladores: toStringValue(row.BASES_REGULADORES),
+    };
+  });
+});
 
-  while (offset < limit) {
-    const { records, total } = await ckanFetch(
-      AOC_RESOURCE_IDS.subsidiesGranted,
-      { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) },
-      Math.min(chunkSize, limit - offset),
-      offset,
-      "DATA_DE_CONCESSIO desc"
-    );
-
-    const chunk = records.map((row) => {
-      const dataConcessio = toStringValue(row.DATA_DE_CONCESSIO);
-      return {
-        dataConcessio,
-        anyConcessio: parseYearFromDate(dataConcessio),
-        titol: toStringValue(row.TITOL),
-        beneficiari: toStringValue(row.BENEFICIARI),
-        import: toNumber(row.IMPORT),
-        basesReguladores: toStringValue(row.BASES_REGULADORES),
-      } as SubsidyExplorerItem;
-    });
-
-    allRows = allRows.concat(chunk);
-    offset += chunk.length;
-    if (chunk.length === 0 || offset >= total) break;
-  }
-
-  return allRows;
+export async function fetchSubsidiesCoverage() {
+  const catalog = await fetchSubsidiesCatalog();
+  const dates = catalog.map((row) => row.dataConcessio).filter(Boolean).sort();
+  return {
+    latestGrantDate: dates.at(-1) || null,
+    currentYear: new Date().getFullYear(),
+    totalRecords: catalog.length,
+  };
 }
 
 export async function fetchSubsidiesExplorer(
@@ -1485,28 +1513,14 @@ export async function fetchPlenaryMinutesCount(): Promise<number> {
 }
 
 export async function fetchTransparencySummary(): Promise<TransparencySummary> {
-  const [contractsResp, totalContracts, totalContractsAmount, subsidiesResp, agreementsResp, plenaryResp, budgetResp, officials] =
-    await Promise.all([
-      ckanFetch(AOC_RESOURCE_IDS.contracts, { CODI_INE10: Number(SANT_SADURNI_CODI_ENS) }, 1),
-      fetchTotalContracts(),
-      fetchTotalAmount(),
-      ckanFetch(AOC_RESOURCE_IDS.subsidiesGranted, { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) }, 500),
-      ckanFetch(
-        AOC_RESOURCE_IDS.cooperationAgreements,
-        { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) },
-        500
-      ),
-      ckanFetch(AOC_RESOURCE_IDS.plenaryMinutes, { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) }, 1),
-      ckanFetch(AOC_RESOURCE_IDS.budgetByProgram, { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) }, 1000),
-      fetchOfficialsWithSalaries(40),
-    ]);
-  const subsidiesAmount = subsidiesResp.records.reduce((acc, row) => acc + toNumber(row.IMPORT), 0);
-  const agreementsAmount = agreementsResp.records.reduce(
-    (acc, row) => acc + toNumber(row.TOTAL_APORTACIONS_PREVISTES),
-    0
-  );
-
-  const budgetLines = budgetResp.records.map((r) => ({
+  const [contracts, subsidies, agreements, plenary, budget] = await Promise.all([
+    loadData("contractes", () => Promise.all([fetchTotalContracts(), fetchTotalAmount()])),
+    loadData("subvencions", fetchSubsidiesCatalog),
+    loadData("convenis", fetchAgreementsCatalog),
+    loadData("actes de ple", fetchPlenaryMinutesCount),
+    loadData("pressupost", fetchBudgetCatalog),
+  ]);
+  const budgetLines = (budget.data || []).map((r) => ({
     year: Number(r.ANY_EXERCICI || 0),
     amount: toNumber(r.IMPORT),
     tipus: toStringValue(r.TIPUS_PARTIDA),
@@ -1520,16 +1534,22 @@ export async function fetchTransparencySummary(): Promise<TransparencySummary> {
     : undefined;
 
   return {
-    contractsTotal: Math.max(contractsResp.total, totalContracts),
-    contractsAmount: totalContractsAmount,
-    subsidiesTotal: subsidiesResp.total,
-    subsidiesAmount,
-    agreementsTotal: agreementsResp.total,
-    agreementsAmount,
-    plenaryMinutesTotal: plenaryResp.total,
+    contractsTotal: contracts.data?.[0] ?? null,
+    contractsAmount: contracts.data?.[1] ?? null,
+    subsidiesTotal: subsidies.data?.length ?? null,
+    subsidiesAmount: subsidies.data?.reduce((acc, row) => acc + row.import, 0) ?? null,
+    agreementsTotal: agreements.data?.length ?? null,
+    agreementsAmount: agreements.data?.reduce((acc, row) => acc + toNumber(row.TOTAL_APORTACIONS_PREVISTES), 0) ?? null,
+    plenaryMinutesTotal: plenary.data ?? null,
     currentBudgetYear,
     currentBudgetAmount,
-    officialsWithSalary: officials.filter((o) => (o.retribucioAnualBruta || 0) > 0).length,
+    unavailableSources: [
+      contracts.unavailable ? "contractes" : null,
+      subsidies.unavailable ? "subvencions" : null,
+      agreements.unavailable ? "convenis" : null,
+      plenary.unavailable ? "actes de ple" : null,
+      budget.unavailable ? "pressupost" : null,
+    ].filter((source): source is string => source !== null),
   };
 }
 
