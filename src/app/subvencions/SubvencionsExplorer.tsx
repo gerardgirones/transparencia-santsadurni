@@ -255,10 +255,11 @@ export default function SubvencionsExplorer({
             </thead>
             <tbody>
               {data.map((row, idx) => (
-                <tr key={`${row.titol}-${row.dataConcessio}-${idx}`} className="border-b border-gray-100 align-top last:border-b-0">
+                <tr key={row.idConcessio || `${row.titol}-${row.dataConcessio}-${idx}`} className="border-b border-gray-100 align-top last:border-b-0">
                   <td className="px-3 py-2 text-xs text-gray-600">{formatDate(row.dataConcessio)}</td>
                   <td className="px-3 py-2 text-gray-800">
                     <p>{row.titol || "Sense titol"}</p>
+                    {row.convocatoriaUrl && <a href={row.convocatoriaUrl} target="_blank" rel="noopener noreferrer" className="mr-3 text-xs text-indigo-700 underline">Convocatòria BDNS</a>}
                     {row.basesReguladores ? (
                       <a href={row.basesReguladores} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-700 underline">
                         Base reguladora

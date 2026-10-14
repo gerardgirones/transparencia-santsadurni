@@ -16,6 +16,14 @@ function reply(records, total = records.length) {
   return Response.json({ success: true, result: { records, total } });
 }
 
+function grant(id, values = {}) {
+  return { id, fechaConcesion: "2025-01-01", convocatoria: "Subvenció", beneficiario: "Entitat", importe: 10, ...values };
+}
+
+function grantReply(content, totalElements = content.length) {
+  return Response.json({ content, totalElements });
+}
+
 function mockFetch(t, handler) {
   const previous = globalThis.fetch;
   globalThis.fetch = (url, options) => Promise.resolve(handler(new URL(url), options));
@@ -44,39 +52,40 @@ test("budget and contracts send text municipality codes; budget uses one expendi
 
 test("subsidies beyond the old 2,500-row limit remain searchable, including 2026", async (t) => {
   const rows = Array.from({ length: 2501 }, (_, i) => ({
-    _id: i + 1,
-    DATA_DE_CONCESSIO: i === 2500 ? "2026-06-01T00:00:00" : "2025-01-01T00:00:00",
-    TITOL: `Subvenció ${i}`, BENEFICIARI: "Entitat", IMPORT: 10,
+    ...grant(i + 1),
+    fechaConcesion: i === 2500 ? "2026-06-01" : "2025-01-01",
+    convocatoria: `Subvenció ${i}`,
   }));
   const offsets = [];
   mockFetch(t, (url) => {
-    const offset = Number(url.searchParams.get("offset"));
-    const limit = Number(url.searchParams.get("limit"));
+    const limit = Number(url.searchParams.get("pageSize"));
+    const offset = Number(url.searchParams.get("page")) * limit;
     offsets.push(offset);
-    assert.equal(url.searchParams.get("sort"), "_id asc");
-    return reply(rows.slice(offset, offset + limit), rows.length);
+    assert.equal(url.searchParams.get("order"), "codConcesion");
+    assert.equal(url.searchParams.get("organos"), "413");
+    return grantReply(rows.slice(offset, offset + limit), rows.length);
   });
   const list = await fetchSubsidiesExplorer({ year: "2026" });
   assert.equal(list.total, 1);
   assert.equal(list.data[0].titol, "Subvenció 2500");
-  assert.deepEqual(offsets, [0, 1000, 2000]);
+  assert.deepEqual(offsets, Array.from({ length: 26 }, (_, i) => i * 100));
   assert.deepEqual(await fetchSubsidiesAvailableYears(), ["2026", "2025"]);
-  assert.equal((await fetchSubsidiesCoverage()).latestGrantDate, "2026-06-01T00:00:00");
+  assert.equal((await fetchSubsidiesCoverage()).latestGrantDate, "2026-06-01");
 });
 
 test("coverage reports the actual latest concession and does not invent current-year data", async (t) => {
-  mockFetch(t, () => reply([{ DATA_DE_CONCESSIO: "2025-12-11T00:00:00", IMPORT: 10000 }]));
+  mockFetch(t, () => grantReply([grant(1, { fechaConcesion: "2025-12-11", importe: 10000 })]));
   const coverage = await fetchSubsidiesCoverage();
-  assert.equal(coverage.latestGrantDate, "2025-12-11T00:00:00");
+  assert.equal(coverage.latestGrantDate, "2025-12-11");
   assert.equal(coverage.totalRecords, 1);
   assert.equal(coverage.currentYear, new Date().getFullYear());
   assert.equal((await fetchSubsidiesExplorer({ year: "2026" })).total, 0);
 });
 
 test("decimal amount filters preserve both dot and comma decimals", async (t) => {
-  mockFetch(t, () => reply([
-    { IMPORT: 100.25, TITOL: "Petit" },
-    { IMPORT: 100.75, TITOL: "Gran" },
+  mockFetch(t, () => grantReply([
+    grant(1, { importe: 100.25, convocatoria: "Petit" }),
+    grant(2, { importe: 100.75, convocatoria: "Gran" }),
   ]));
   for (const amountMin of ["100.50", "100,50"]) {
     const result = await fetchSubsidiesExplorer({ amountMin });
@@ -93,7 +102,7 @@ test("unsuccessful and truncated CKAN responses are errors rather than empty dat
 });
 
 test("summary sums every page and isolates a failed budget without consulting salaries", async (t) => {
-  const subsidies = Array.from({ length: 1201 }, () => ({ IMPORT: 2 }));
+  const subsidies = Array.from({ length: 1201 }, (_, i) => grant(i + 1, { importe: 2 }));
   const agreements = Array.from({ length: 1001 }, () => ({ TOTAL_APORTACIONS_PREVISTES: 3 }));
   const previousError = console.error;
   console.error = () => {};
@@ -102,11 +111,15 @@ test("summary sums every page and isolates a failed budget without consulting sa
     if (url.hostname === "analisi.transparenciacatalunya.cat") {
       return Response.json([{ total: url.searchParams.get("$select").includes("count") ? "10" : "500" }]);
     }
+    if (url.hostname === "www.subvenciones.gob.es") {
+      assert.equal(url.pathname, "/bdnstrans/api/concesiones/busqueda");
+      const offset = Number(url.searchParams.get("page")) * 100;
+      return grantReply(subsidies.slice(offset, offset + 100), subsidies.length);
+    }
     assert.equal(url.hostname, "dadesobertes.seu-e.cat", "No salary website should be requested");
     const resource = url.searchParams.get("resource_id");
     if (resource === AOC_RESOURCE_IDS.budgetByProgram) return new Response("Invalid query", { status: 409 });
     const offset = Number(url.searchParams.get("offset"));
-    if (resource === AOC_RESOURCE_IDS.subsidiesGranted) return reply(subsidies.slice(offset, offset + 1000), subsidies.length);
     if (resource === AOC_RESOURCE_IDS.cooperationAgreements) return reply(agreements.slice(offset, offset + 1000), agreements.length);
     if (resource === AOC_RESOURCE_IDS.plenaryMinutes) return reply([], 242);
     assert.fail(`Unexpected source: ${resource}`);
