@@ -12,7 +12,7 @@ export default function SubsidyCoverageNotice({ coverage }: Props) {
   return (
     <div className={`mb-6 rounded-lg border p-4 text-sm ${missingCurrentYear ? "border-amber-200 bg-amber-50 text-amber-900" : "border-gray-200 bg-gray-50 text-gray-700"}`}>
       <p>
-        Font: dades obertes de l’AOC · {coverage.totalRecords} concessions publicades.
+        Font: BDNS (concessions) · {coverage.totalRecords} concessions publicades.
         {coverage.latestGrantDate ? ` Darrera concessió disponible: ${formatDate(coverage.latestGrantDate)}.` : " No hi ha concessions disponibles a la font."}
       </p>
       {missingCurrentYear && (

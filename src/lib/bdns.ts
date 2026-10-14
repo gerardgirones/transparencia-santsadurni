@@ -28,6 +28,74 @@ export interface SubsidyCallFilters {
   page?: number;
 }
 
+export interface SubsidyGrant {
+  id: string;
+  date: string;
+  title: string;
+  beneficiary: string;
+  amount: number;
+  basesUrl: string;
+  callUrl: string | null;
+}
+
+interface GrantRecord {
+  id: number | string;
+  fechaConcesion: string;
+  convocatoria?: string;
+  descripcionCooficial?: string | null;
+  beneficiario?: string;
+  importe: number;
+  urlBR?: string | null;
+  numeroConvocatoria?: string;
+}
+
+// Use one authoritative concessions catalogue, not a union with its AOC copy.
+export async function fetchSubsidyGrants(): Promise<SubsidyGrant[]> {
+  const grants = new Map<string, SubsidyGrant>();
+  const pageSize = 100;
+  let page = 0;
+  let total = Infinity;
+  while (page * pageSize < total) {
+    const url = new URL(`${BDNS_API_URL}/concesiones/busqueda`);
+    url.searchParams.set("vpd", "GE");
+    url.searchParams.set("tipoAdministracion", "L");
+    url.searchParams.set("organos", BDNS_MUNICIPAL_ORGAN_ID);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("pageSize", String(pageSize));
+    url.searchParams.set("order", "codConcesion");
+    url.searchParams.set("direccion", "asc");
+    const result = await bdnsFetch(url) as { content?: GrantRecord[]; totalElements?: number } | null;
+    if (!result || !Array.isArray(result.content) || typeof result.totalElements !== "number" || !Number.isSafeInteger(result.totalElements) || result.totalElements < 0) {
+      throw new Error("BDNS returned an invalid grant listing");
+    }
+    total = result.totalElements;
+    if (result.content.length === 0 && grants.size < total) throw new Error("BDNS returned an incomplete grant catalogue");
+    for (const record of result.content) {
+      const id = String(record?.id ?? "");
+      if (!/^\d+$/.test(id) || typeof record.importe !== "number" || !Number.isFinite(record.importe) || !/^\d{4}-\d{2}-\d{2}$/.test(record.fechaConcesion || "")) {
+        throw new Error("BDNS returned an invalid grant");
+      }
+      const callCode = String(record.numeroConvocatoria ?? "");
+      grants.set(id, {
+        id,
+        date: record.fechaConcesion,
+        title: record.descripcionCooficial?.trim() || record.convocatoria || "",
+        beneficiary: record.beneficiario || "",
+        amount: record.importe,
+        basesUrl: record.urlBR || "",
+        callUrl: /^\d+$/.test(callCode) ? `${BDNS_PORTAL_URL}/convocatoria/${callCode}` : null,
+      });
+    }
+    // A shortened page before the declared end must not look like a full catalogue.
+    page += 1;
+    if (result.content.length < pageSize && grants.size < total) {
+      throw new Error("BDNS returned an incomplete grant catalogue");
+    }
+  }
+  if (grants.size !== total) throw new Error("BDNS returned an incomplete grant catalogue");
+  return [...grants.values()];
+}
+
 export function resolveSubsidyCallFilters(filters: SubsidyCallFilters = {}) {
   const currentYear = new Date().getFullYear();
   const parsedYear = Number(filters.year);

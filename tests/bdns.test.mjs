@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import "./register-source.mjs";
 
-const { fetchSubsidyCalls, resolveSubsidyCallFilters } = await import("../src/lib/bdns.ts");
+const { fetchSubsidyCalls, fetchSubsidyGrants, resolveSubsidyCallFilters } = await import("../src/lib/bdns.ts");
 
 const call = (code = "933923") => ({
   numeroConvocatoria: code,
@@ -106,4 +106,32 @@ test("invalid year and page parameters resolve to a safe current-year query", ()
   assert.equal(result.year, new Date().getFullYear());
   assert.equal(result.page, 1);
   assert.equal(result.search.length, 200);
+});
+
+test("concessions use granted amounts, real grant dates and the same mandatory municipal scope", async (t) => {
+  mockFetch(t, (url) => {
+    assert.equal(url.pathname, "/bdnstrans/api/concesiones/busqueda");
+    assert.equal(url.searchParams.get("organos"), "413");
+    assert.equal(url.searchParams.get("tipoAdministracion"), "L");
+    return Response.json({ totalElements: 1, content: [{
+      id: 137127028, fechaConcesion: "2025-12-11", importe: 10000,
+      beneficiario: "CLUB ESPORTIU NOIA", convocatoria: "Ajut", numeroConvocatoria: "874475",
+      presupuestoTotal: 99999,
+    }] });
+  });
+  const grants = await fetchSubsidyGrants();
+  assert.equal(grants[0].amount, 10000);
+  assert.equal(grants[0].date, "2025-12-11");
+  assert.equal(grants[0].id, "137127028");
+  assert.equal(grants[0].callUrl, "https://www.subvenciones.gob.es/bdnstrans/GE/es/convocatoria/874475");
+});
+
+test("duplicate or missing grant pages cannot inflate or silently truncate the totals", async (t) => {
+  const row = { id: 1, fechaConcesion: "2026-01-01", importe: 10 };
+  mockFetch(t, () => Response.json({ totalElements: 2, content: [row, row] }));
+  await assert.rejects(fetchSubsidyGrants(), /incomplete grant catalogue/);
+  globalThis.fetch = async () => Response.json({ totalElements: 2, content: [row] });
+  await assert.rejects(fetchSubsidyGrants(), /incomplete grant catalogue/);
+  globalThis.fetch = async () => Response.json({ totalElements: 1, content: [{ ...row, importe: null }] });
+  await assert.rejects(fetchSubsidyGrants(), /invalid grant/);
 });

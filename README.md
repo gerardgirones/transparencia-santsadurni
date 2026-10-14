@@ -47,7 +47,7 @@ els imports decimals i la resposta del resum quan una font deixa de funcionar.
 
 ### Cobertura de subvencions
 
-L'explorador mostra concessions publicades a l'AOC, sense limitar l'històric a
+L'explorador mostra concessions consultades directament a la BDNS, sense limitar l'històric a
 2.500 registres. Indica la data de la darrera concessió disponible i avisa quan
 la font encara no conté dades de l'any en curs. L'absència de registres no
 demostra que no s'hagin concedit ajuts. Les convocatòries i els ajuts previstos
@@ -70,6 +70,13 @@ registre `fechaDesde`/`fechaHasta`. El detall de cada convocatòria es consulta
 a `/convocatorias?numConv=...` per obtenir el pressupost previst i el procediment.
 No es barregen aquests pressupostos amb els imports de concessions.
 
+La vista de concessions, el rànquing, l'exportació CSV i els indicadors de
+transparència usen `/concesiones/busqueda`, també amb `organos=413`, i recorren
+totes les pàgines de 100 registres. L'import prové de `importe`, no del pressupost
+de la convocatòria. Els identificadors BDNS eviten duplicats; una resposta
+incompleta o un import no vàlid es tracta com a error, no com a zero. L'AOC no
+se suma a aquest catàleg per no comptar dues vegades les mateixes concessions.
+
 Les respostes es guarden en la memòria cau de Next.js durant sis hores. La
 revalidació es produeix a partir d'una nova visita, no mitjançant un procés
 programat en segon pla. Els detalls es consulten amb un màxim de quatre
@@ -91,7 +98,7 @@ També es suporta `TURSO_AUTH_TOKEN` com a alternativa a `TURSO_TOKEN`.
 
 ## Font de dades
 
-Totes les dades provenen del conjunt de dades [Contractació pública a Catalunya](https://analisi.transparenciacatalunya.cat/Sector-P-blic/Contractaci-del-sector-p-blic-de-la-Generalitat-d/ybgg-dgi6) publicat pel Departament d'Economia i Hisenda de la Generalitat de Catalunya.
+Les dades de contractació provenen del conjunt de dades [Contractació pública a Catalunya](https://analisi.transparenciacatalunya.cat/Sector-P-blic/Contractaci-del-sector-p-blic-de-la-Generalitat-d/ybgg-dgi6). El pressupost, els convenis i les actes provenen de les dades obertes de l'AOC. Les convocatòries i concessions de subvencions es consulten directament a l'API pública de la BDNS.
 
 ## Desplegament
 

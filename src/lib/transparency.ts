@@ -10,6 +10,7 @@ import { fetchTotalAmount, fetchTotalContracts } from "@/lib/api";
 import * as XLSX from "xlsx";
 import { cache } from "react";
 import { loadData } from "./data-result";
+import { fetchSubsidyGrants } from "./bdns";
 
 type CkanRecord = Record<string, unknown>;
 
@@ -62,6 +63,8 @@ export interface TransparencyBudgetLine {
 }
 
 export interface TransparencySubsidy {
+  idConcessio?: string;
+  convocatoriaUrl?: string;
   dataConcessio: string;
   titol: string;
   beneficiari: string;
@@ -1325,35 +1328,25 @@ export async function fetchBudgetLines(limit = 30): Promise<TransparencyBudgetLi
 }
 
 export async function fetchSubsidies(limit = 50): Promise<TransparencySubsidy[]> {
-  const { records } = await ckanFetch(
-    AOC_RESOURCE_IDS.subsidiesGranted,
-    { CODI_ENS: Number(SANT_SADURNI_CODI_ENS) },
-    limit,
-    0,
-    "DATA_DE_CONCESSIO desc"
-  );
-  return records.map((row) => ({
-    dataConcessio: toStringValue(row.DATA_DE_CONCESSIO),
-    titol: toStringValue(row.TITOL),
-    beneficiari: toStringValue(row.BENEFICIARI),
-    import: toNumber(row.IMPORT),
-    basesReguladores: toStringValue(row.BASES_REGULADORES),
-  }));
+  const catalog = await fetchSubsidiesCatalog();
+  return [...catalog]
+    .sort((a, b) => b.dataConcessio.localeCompare(a.dataConcessio) || (b.idConcessio || "").localeCompare(a.idConcessio || ""))
+    .slice(0, limit);
 }
 
 const fetchSubsidiesCatalog = cache(async (): Promise<SubsidyExplorerItem[]> => {
-  const records = await ckanFetchAll(AOC_RESOURCE_IDS.subsidiesGranted, {
-    CODI_ENS: Number(SANT_SADURNI_CODI_ENS),
-  });
+  const records = await fetchSubsidyGrants();
   return records.map((row) => {
-    const dataConcessio = toStringValue(row.DATA_DE_CONCESSIO);
+    const dataConcessio = row.date;
     return {
+      idConcessio: row.id,
+      convocatoriaUrl: row.callUrl || undefined,
       dataConcessio,
       anyConcessio: parseYearFromDate(dataConcessio),
-      titol: toStringValue(row.TITOL),
-      beneficiari: toStringValue(row.BENEFICIARI),
-      import: toNumber(row.IMPORT),
-      basesReguladores: toStringValue(row.BASES_REGULADORES),
+      titol: row.title,
+      beneficiari: row.beneficiary,
+      import: row.amount,
+      basesReguladores: row.basesUrl,
     };
   });
 });
