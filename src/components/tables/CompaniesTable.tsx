@@ -1,5 +1,7 @@
 "use client";
 
+import { buildCompanyHref } from "@/lib/company-identity";
+
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { CompanyAggregation } from "@/lib/types";
@@ -371,7 +373,7 @@ export default function CompaniesTable({
                   <td className="py-3 px-4 text-gray-400">{rank}</td>
                   <td className="py-3 px-4 break-words">
                     <Link
-                      href={`/empreses/${encodeURIComponent(company.identificacio_adjudicatari)}`}
+                      href={buildCompanyHref(company.identificacio_adjudicatari, company.denominacio_adjudicatari)}
                       className="text-gray-900 hover:underline font-medium break-words"
                     >
                       {isUte && !isExpanded ? names[0] : company.denominacio_adjudicatari}
@@ -457,7 +459,7 @@ export default function CompaniesTable({
               <div className="mb-2 flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <Link
-                    href={`/empreses/${encodeURIComponent(company.identificacio_adjudicatari)}`}
+                    href={buildCompanyHref(company.identificacio_adjudicatari, company.denominacio_adjudicatari)}
                     className="text-sm font-semibold text-gray-900 hover:underline break-words"
                   >
                     {names[0]}

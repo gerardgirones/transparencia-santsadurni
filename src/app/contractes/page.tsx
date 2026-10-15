@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ContractExplorer from "./ContractExplorer";
 import SharePageButton from "@/components/ui/SharePageButton";
 import { fetchContracts, fetchContractsCount } from "@/lib/api";
+import { CONTRACT_SORT_OPTIONS, isContractSortKey } from "@/lib/contract-sort";
 
 export const metadata: Metadata = {
   title: "Explorador de contractes",
@@ -18,6 +19,9 @@ interface Props {
     amountMax?: string;
     nom_organ?: string;
     search?: string;
+    date_from?: string;
+    date_to?: string;
+    sort?: string;
     page?: string;
   }>;
 }
@@ -32,7 +36,11 @@ export default async function ContractesPage({ searchParams }: Props) {
     amountMax: params.amountMax || "",
     nom_organ: params.nom_organ || "",
     search: params.search || "",
+    dateFrom: params.date_from || "",
+    dateTo: params.date_to || "",
   };
+  const initialSort = isContractSortKey(params.sort) ? params.sort : "date-desc";
+  const sortOptions = CONTRACT_SORT_OPTIONS[initialSort];
   const initialPage = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const queryFilters = {
     year: initialFilters.year || undefined,
@@ -42,10 +50,12 @@ export default async function ContractesPage({ searchParams }: Props) {
     amountMax: initialFilters.amountMax || undefined,
     nom_organ: initialFilters.nom_organ || undefined,
     search: initialFilters.search || undefined,
+    dateFrom: initialFilters.dateFrom || undefined,
+    dateTo: initialFilters.dateTo || undefined,
   };
 
   const [initialContracts, initialTotal] = await Promise.all([
-    fetchContracts({ ...queryFilters, page: initialPage }),
+    fetchContracts({ ...queryFilters, page: initialPage, orderBy: sortOptions.orderBy, orderDir: sortOptions.orderDir }),
     fetchContractsCount(queryFilters),
   ]);
 
@@ -59,10 +69,12 @@ export default async function ContractesPage({ searchParams }: Props) {
       </div>
       <p className="text-gray-600 mb-8">
         Cerca i filtra els contractes del municipi publicats a la plataforma de
-        contractació pública.
+        contractació pública. Inclou les adjudicacions de l&apos;Ajuntament i els
+        contractes d&apos;altres organismes que indiquen Sant Sadurní com a lloc d&apos;execució.
       </p>
       <ContractExplorer
         initialFilters={initialFilters}
+        initialSort={initialSort}
         initialPage={initialPage}
         initialContracts={initialContracts}
         initialTotal={initialTotal}

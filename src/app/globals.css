@@ -24,3 +24,8 @@ select,
 textarea {
   font-size: max(16px, 1em);
 }
+
+/* Keep phone form fields readable and avoid automatic input zoom on iOS. */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px; }
+}

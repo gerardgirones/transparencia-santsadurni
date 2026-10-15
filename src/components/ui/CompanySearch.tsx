@@ -1,5 +1,7 @@
 "use client";
 
+import { buildCompanyHref } from "@/lib/company-identity";
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import type { CompanyAggregation, OrganAggregation } from "@/lib/types";
@@ -24,11 +26,11 @@ export default function CompanySearch() {
   const modeMeta: Record<SearchMode, { label: string; placeholder: string }> = {
     empresa: {
       label: "Empreses",
-      placeholder: "Ex. ACSA, Novartis o A28037224...",
+      placeholder: "Cerca una empresa que hagi contractat al municipi...",
     },
     organisme: {
       label: "Organismes",
-      placeholder: "Ex. Ajuntament de Vic, Departament de Salut...",
+      placeholder: "Ex. Ajuntament de Sant Sadurní...",
     },
     subvencio: {
       label: "Subvencions",
@@ -39,12 +41,15 @@ export default function CompanySearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const requestIdRef = useRef(0);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>(null);
   const abortRef = useRef<AbortController | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const search = useCallback(async (q: string, nextMode: SearchMode) => {
+    const requestId = ++requestIdRef.current;
     const minChars = minCharsForMode();
     if (q.trim().length < minChars) {
       setResults([]);
@@ -53,6 +58,7 @@ export default function CompanySearch() {
       return;
     }
     setLoading(true);
+    setError(false);
     setOpen(true);
     try {
       if (abortRef.current) abortRef.current.abort();
@@ -67,7 +73,10 @@ export default function CompanySearch() {
         endpoint,
         { signal: abortRef.current.signal }
       );
+      if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const json = await res.json();
+      if (requestId !== requestIdRef.current) return;
+      if (!Array.isArray(json.data)) throw new Error("Invalid search response");
       const sliced = (json.data || []).slice(0, 8);
       if (nextMode === "empresa") {
         setResults(sliced.map((row: CompanyAggregation) => ({ kind: "empresa" as const, ...row })));
@@ -77,16 +86,23 @@ export default function CompanySearch() {
         setResults(sliced.map((row: SubsidySearchResult) => ({ kind: "subvencio" as const, ...row })));
       }
       setOpen(true);
-    } catch {
-      // Ignore aborted requests while the user is still typing.
+    } catch (err) {
+      if (requestId === requestIdRef.current && (err as Error).name !== "AbortError") {
+        setError(true);
+        setResults([]);
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, []);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
+      requestIdRef.current += 1;
+      abortRef.current?.abort();
+      setError(false);
+      setResults([]);
       setQuery(val);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       const minChars = minCharsForMode();
@@ -96,17 +112,25 @@ export default function CompanySearch() {
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setOpen(true);
       debounceRef.current = setTimeout(() => search(val, mode), 300);
     },
     [mode, search]
   );
 
   const switchMode = useCallback((nextMode: SearchMode) => {
+    requestIdRef.current += 1;
+    abortRef.current?.abort();
+    setError(false);
+    setLoading(false);
     setMode(nextMode);
     setResults([]);
     setOpen(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (query.trim().length >= minCharsForMode()) {
+      setLoading(true);
+      setOpen(true);
       debounceRef.current = setTimeout(() => search(query, nextMode), 100);
     }
   }, [query, search]);
@@ -125,13 +149,15 @@ export default function CompanySearch() {
     return () => {
       document.removeEventListener("mousedown", handleClick);
       if (abortRef.current) abortRef.current.abort();
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      requestIdRef.current += 1;
     };
   }, []);
 
   return (
     <div ref={containerRef} className="relative w-full max-w-3xl lg:mx-auto lg:max-w-[40.5rem]">
       <p className="mb-2 text-sm font-medium text-gray-700">Què vols cercar?</p>
-      <div className="mb-2 grid grid-cols-1 gap-2 lg:flex lg:justify-center lg:gap-3">
+      <div className="mb-2 grid grid-cols-3 gap-2 lg:flex lg:justify-center lg:gap-3">
         {(["empresa", "organisme", "subvencio"] as SearchMode[]).map((searchMode) => (
           <button
             key={searchMode}
@@ -196,8 +222,8 @@ export default function CompanySearch() {
             if (result.kind === "empresa") {
               return (
                 <Link
-                  key={`empresa-${result.identificacio_adjudicatari}`}
-                  href={`/empreses/${encodeURIComponent(result.identificacio_adjudicatari)}`}
+                  key={`empresa-${result.identificacio_adjudicatari}-${result.denominacio_adjudicatari}`}
+                  href={buildCompanyHref(result.identificacio_adjudicatari, result.denominacio_adjudicatari)}
                   onClick={() => setOpen(false)}
                   className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                 >
@@ -283,7 +309,14 @@ export default function CompanySearch() {
         </div>
       )}
 
-      {open && query.trim().length >= minCharsForMode() && results.length === 0 && !loading && (
+      {open && error && !loading && (
+        <div role="alert" className="absolute z-50 mt-1 w-full rounded-xl border border-amber-200 bg-white p-4 text-sm text-amber-900 shadow-lg">
+          No s’ha pogut completar la cerca.
+          <button type="button" onClick={() => search(query, mode)} className="ml-2 underline">Torna-ho a provar</button>
+        </div>
+      )}
+
+      {open && query.trim().length >= minCharsForMode() && results.length === 0 && !loading && !error && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-4 text-sm text-gray-500 text-center">
           {mode === "empresa"
             ? "No s'han trobat empreses."

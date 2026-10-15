@@ -1,3 +1,4 @@
+import { buildCompanyHref, isAmbiguousCompanyId } from "@/lib/company-identity";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
@@ -31,14 +32,16 @@ export const revalidate = 21600;
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ name?: string }>;
 }
 
-const getCompanyDetail = cache(async (id: string) => fetchCompanyDetail(id));
+const getCompanyDetail = cache(async (id: string, name?: string) => fetchCompanyDetail(id, name));
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { id } = await params;
   const decodedId = decodeURIComponent(id);
-  const { company } = await getCompanyDetail(decodedId);
+  const name = (await searchParams).name;
+  const { company } = await getCompanyDetail(decodedId, name);
   const companyName = company?.denominacio_adjudicatari || decodedId;
   const canonicalCompanyId = company?.identificacio_adjudicatari || decodedId;
   const totalAmount = parseFloat(company?.total || "0");
@@ -49,36 +52,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       )} contractes públics a ${companyName}.`
     : `Detall dels contractes públics adjudicats a ${companyName}.`;
 
-  const entityPath = `/empreses/${encodeURIComponent(canonicalCompanyId)}`;
+  const entityPath = buildCompanyHref(canonicalCompanyId, companyName);
   return buildEntityMetadata({
     title: companyName,
     description,
     path: entityPath,
-    imagePath: `${entityPath}/opengraph-image`,
+    imagePath: isAmbiguousCompanyId(decodedId) ? "/opengraph-image" : `${entityPath}/opengraph-image`,
     imageAlt: `Resum de contractació pública de ${companyName}`,
     keywords: [
       companyName,
       decodedId,
       `${companyName} contractes`,
-      "contractació pública Catalunya",
+      "contractació pública Sant Sadurní",
     ],
     openGraphType: "article",
   });
 }
 
-export default async function CompanyDetailPage({ params }: Props) {
+export default async function CompanyDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
   const decodedId = decodeURIComponent(id);
+  const name = (await searchParams).name;
 
   const [{ company, yearly }, contracts, contractsCount, topOrgans, lastAwardDate] = await Promise.all([
-    getCompanyDetail(decodedId),
-    fetchCompanyContracts(decodedId, 0, 50),
-    fetchCompanyContractsCount(decodedId),
-    fetchCompanyTopOrgans(decodedId, 10),
-    fetchCompanyLastAwardDate(decodedId),
+    getCompanyDetail(decodedId, name),
+    fetchCompanyContracts(decodedId, 0, 50, name),
+    fetchCompanyContractsCount(decodedId, name),
+    fetchCompanyTopOrgans(decodedId, 10, name),
+    fetchCompanyLastAwardDate(decodedId, name),
   ]);
 
-  const adminHistory = await loadAdminHistory(decodedId);
+  const adminHistory = isAmbiguousCompanyId(decodedId) ? null : await loadAdminHistory(decodedId);
   const hasBormeData = Boolean(adminHistory && adminHistory.spans.length > 0);
 
   if (!company) {
@@ -104,7 +108,7 @@ export default async function CompanyDetailPage({ params }: Props) {
   const currentYearAmountSubtitle = currentYearRow
     ? `Total històric: ${formatCompactNumber(totalAmount)}`
     : `Sense dades ${currentYear}. Total històric: ${formatCompactNumber(totalAmount)}`;
-  const entityPath = `/empreses/${encodeURIComponent(company.identificacio_adjudicatari)}`;
+  const entityPath = buildCompanyHref(company.identificacio_adjudicatari, company.denominacio_adjudicatari);
   const companyDescription = `${formatCompactNumber(totalAmount)} adjudicats en ${formatNumber(numContracts)} contractes públics a ${company.denominacio_adjudicatari}.`;
   const jsonLd = buildEntityJsonLdGraph(
     buildEntityPrimaryJsonLd({
@@ -203,6 +207,7 @@ export default async function CompanyDetailPage({ params }: Props) {
       <section>
         <CompanyContractsExplorer
           nif={company.identificacio_adjudicatari}
+          companyName={company.denominacio_adjudicatari}
           initialContracts={contracts}
           totalContracts={contractsCount}
         />

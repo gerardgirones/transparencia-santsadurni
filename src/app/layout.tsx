@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -108,6 +109,8 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <div className="h-[calc(3.5rem+env(safe-area-inset-bottom))] xl:hidden" aria-hidden="true" />
+        <MobileBottomNav />
         <Analytics />
         <SpeedInsights />
       </body>

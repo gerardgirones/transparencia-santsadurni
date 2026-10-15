@@ -31,9 +31,9 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-20 md:h-24">
+        <div className="flex items-center justify-between h-20 xl:h-24">
           <Link href="/" prefetch className="flex items-center shrink-0">
-            <span className="block h-14 w-[220px] md:h-16 md:w-[260px]">
+            <span className="block h-14 w-[220px] xl:h-16 xl:w-[260px]">
               <Image
                 src="/logo-landing-v2.png"
                 alt={SITE_NAME}
@@ -46,7 +46,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center h-full gap-1">
+          <nav className="hidden xl:flex items-center h-full gap-1">
             {PRIMARY_NAV_ITEMS.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -112,7 +112,7 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-50"
+            className="xl:hidden p-2 rounded-md text-gray-600 hover:bg-gray-50"
             aria-label="Obre menú"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,7 +127,7 @@ export default function Header() {
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <nav className="md:hidden pb-4 space-y-1">
+          <nav className="xl:hidden pb-4 space-y-1">
             {PRIMARY_NAV_ITEMS.map((item) => {
               const isActive =
                 pathname === item.href ||

@@ -1,3 +1,4 @@
+import { loadData } from "@/lib/data-result";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -14,6 +15,9 @@ import {
 } from "@/components/charts/LazyCharts";
 import StatCard from "@/components/ui/StatCard";
 import SharePageButton from "@/components/ui/SharePageButton";
+
+// A source outage should be retried without caching the incomplete page for six hours.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Anàlisi",
@@ -50,25 +54,30 @@ function estimateExpectedRiskBandCount(
 
 export default async function AnalisiPage() {
   const [
-    thresholdData,
-    bandSummary,
-    topRiskOrgans,
-    topRiskCompanies,
-    minorShareYearly,
+    thresholdResult,
+    bandResult,
+    organsResult,
+    companiesResult,
+    yearlyResult,
   ] = await Promise.all([
-    fetchThresholdDistribution(),
-    fetchMinorBandSummary(),
-    fetchTopOrgansInMinorRiskBand(15),
-    fetchTopCompaniesInMinorRiskBand(15),
-    fetchMinorShareYearly(),
+    loadData("distribució de contractes menors", fetchThresholdDistribution),
+    loadData("resum del llindar", fetchMinorBandSummary),
+    loadData("rànquing d’organismes al llindar", () => fetchTopOrgansInMinorRiskBand(15)),
+    loadData("rànquing d’empreses al llindar", () => fetchTopCompaniesInMinorRiskBand(15)),
+    loadData("sèrie anual de contractes menors", fetchMinorShareYearly),
   ]);
 
-  const totalMinorUnder15k = bandSummary.total_minor_under_15k;
-  const riskBandCount = bandSummary.risk_band_14900_15000;
+  const thresholdData = thresholdResult.data ?? [];
+  const bandSummary = bandResult.data;
+  const topRiskOrgans = organsResult.data ?? [];
+  const topRiskCompanies = companiesResult.data ?? [];
+  const minorShareYearly = yearlyResult.data ?? [];
+  const totalMinorUnder15k = bandSummary?.total_minor_under_15k ?? 0;
+  const riskBandCount = bandSummary?.risk_band_14900_15000 ?? 0;
   const riskBandPct =
     totalMinorUnder15k > 0 ? (riskBandCount / totalMinorUnder15k) * 100 : null;
   const oneInN = riskBandCount > 0 ? Math.round(totalMinorUnder15k / riskBandCount) : null;
-  const riskBandAmount = bandSummary.risk_band_14900_15000_amount;
+  const riskBandAmount = bandSummary?.risk_band_14900_15000_amount ?? 0;
   const riskBandAvgAmount = riskBandCount > 0 ? riskBandAmount / riskBandCount : null;
   const expectedRiskBandCount = estimateExpectedRiskBandCount(thresholdData);
   const expectedRiskBandAmount =
@@ -134,6 +143,7 @@ export default async function AnalisiPage() {
         </p>
       </div>
 
+      {bandResult.unavailable ? <Unavailable label="el resum del llindar" /> : (
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">
           1) Senyal de risc al llindar dels 15.000 EUR
@@ -177,7 +187,7 @@ export default async function AnalisiPage() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
-          <ThresholdChartLazy data={thresholdData} />
+          {thresholdResult.unavailable ? <Unavailable label="el gràfic de distribució" /> : <ThresholdChartLazy data={thresholdData} />}
         </div>
         <p className="text-xs text-gray-500 mt-2">
           El gràfic mostra la distribució en trams de 500 EUR. La franja
@@ -197,6 +207,7 @@ export default async function AnalisiPage() {
           </p>
         </div>
       </section>
+      )}
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">
@@ -212,6 +223,7 @@ export default async function AnalisiPage() {
             <div className="px-4 py-3 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">Top organismes</h3>
             </div>
+            {organsResult.unavailable ? <Unavailable label="el rànquing d’organismes" /> : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
@@ -243,12 +255,14 @@ export default async function AnalisiPage() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
 
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-x-auto">
             <div className="px-4 py-3 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">Top empreses</h3>
             </div>
+            {companiesResult.unavailable ? <Unavailable label="el rànquing d’empreses" /> : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
@@ -281,10 +295,12 @@ export default async function AnalisiPage() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         </div>
       </section>
 
+      {yearlyResult.unavailable ? <Unavailable label="la sèrie anual de contractes menors" /> : (
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">
           2) Pes dels contractes menors sobre el total
@@ -350,6 +366,13 @@ export default async function AnalisiPage() {
             : "No hi ha prou dades anuals per mostrar tendència."}
         </p>
       </section>
+      )}
     </div>
   );
+}
+
+function Unavailable({ label }: { label: string }) {
+  return <p role="status" className="my-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+    No s’ha pogut carregar {label}. La font oficial no està disponible temporalment; torna-ho a provar més tard.
+  </p>;
 }

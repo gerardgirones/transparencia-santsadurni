@@ -1,5 +1,7 @@
 "use client";
 
+import { buildCompanyHref } from "@/lib/company-identity";
+
 import { useState } from "react";
 import Link from "next/link";
 import type { CompanyAggregation } from "@/lib/types";
@@ -69,7 +71,7 @@ export default function OrganTopCompaniesTable({ rows, organTotalAmount }: Props
                 >
                   <td className="py-3 px-4">
                     <Link
-                      href={`/empreses/${encodeURIComponent(company.identificacio_adjudicatari)}`}
+                      href={buildCompanyHref(company.identificacio_adjudicatari, company.denominacio_adjudicatari)}
                       className="font-medium text-gray-900 hover:underline"
                     >
                       {companyLabel}
