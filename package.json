@@ -11,7 +11,10 @@
     "doctor": "react-doctor . --yes",
     "doctor:verbose": "react-doctor . --yes --verbose",
     "deploy:preview": "npx vercel --yes",
-    "deploy:prod": "npx vercel --prod --yes"
+    "deploy:prod": "npx vercel --prod --yes",
+    "typecheck": "tsc --noEmit",
+    "build:test": "node tests/build.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
@@ -25,6 +28,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -35,5 +39,6 @@
     "react-doctor": "^0.0.18",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "pnpm@10.30.2"
 }

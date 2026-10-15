@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchContracts, fetchContractsCount } from "@/lib/api";
+import { CONTRACT_SORT_OPTIONS, isContractSortKey } from "@/lib/contract-sort";
 import {
   API_ROUTE_S_MAXAGE_SECONDS,
   API_ROUTE_STALE_WHILE_REVALIDATE_SECONDS,
-  DEFAULT_PAGE_SIZE,
 } from "@/config/constants";
 
 function csvEscape(value: unknown): string {
@@ -58,26 +58,13 @@ function toContractsCsv(
   return [header.join(","), ...lines].join("\n");
 }
 
-const SORT_MAP: Record<string, { orderBy: string; orderDir: "ASC" | "DESC" }> = {
-  "date-desc": {
-    orderBy: "coalesce(data_adjudicacio_contracte, data_formalitzacio_contracte, data_publicacio_anunci)",
-    orderDir: "DESC",
-  },
-  "date-asc": {
-    orderBy: "coalesce(data_adjudicacio_contracte, data_formalitzacio_contracte, data_publicacio_anunci)",
-    orderDir: "ASC",
-  },
-  "amount-desc": { orderBy: "import_adjudicacio_sense::number", orderDir: "DESC" },
-  "amount-asc": { orderBy: "import_adjudicacio_sense::number", orderDir: "ASC" },
-  "awardee-asc": { orderBy: "denominacio_adjudicatari", orderDir: "ASC" },
-  "awardee-desc": { orderBy: "denominacio_adjudicatari", orderDir: "DESC" },
-};
-
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const format = searchParams.get("format");
-  const sortKey = searchParams.get("sort") || undefined;
-  const sortOpts = sortKey ? SORT_MAP[sortKey] : undefined;
+  const sortKey = searchParams.get("sort");
+  const sortOpts = isContractSortKey(sortKey) ? CONTRACT_SORT_OPTIONS[sortKey] : undefined;
+  const parsedPage = parseInt(searchParams.get("page") || "1", 10);
+  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
   const filters = {
     year: searchParams.get("year") || undefined,
@@ -87,9 +74,11 @@ export async function GET(request: NextRequest) {
     amountMax: searchParams.get("amountMax") || undefined,
     nom_organ: searchParams.get("nom_organ") || undefined,
     search: searchParams.get("search") || undefined,
+    dateFrom: searchParams.get("date_from") || undefined,
+    dateTo: searchParams.get("date_to") || undefined,
     nif: searchParams.get("nif") || undefined,
-    page: parseInt(searchParams.get("page") || "1", 10),
-    pageSize: parseInt(searchParams.get("pageSize") || String(DEFAULT_PAGE_SIZE), 10),
+    awardee_name: searchParams.get("awardee_name") || undefined,
+    page,
     ...(sortOpts && { orderBy: sortOpts.orderBy, orderDir: sortOpts.orderDir }),
   };
 

@@ -128,6 +128,28 @@ pnpm run deploy:preview -- --token %VERCEL_TOKEN%
 pnpm run deploy:prod -- --token %VERCEL_TOKEN%
 ```
 
+## Comprovacions del portal
+
+Amb Node.js 24 i pnpm 10.30.2:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build:test
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Les proves de navegació cobreixen ordinador i mòbil, filtres de dates, ordenació,
+exportació i errors del cercador. Fan servir dades fictícies de Socrata, AOC i
+BDNS, sense credencials. La compilació de proves es desa a `.next-test`; la
+compilació habitual continua utilitzant les fonts oficials i `.next`.
+
+El flux de GitHub Actions executa aquestes comprovacions en cada proposta de
+canvi. Les proves de dades comproven que les consultes mantenen l'àmbit de Sant
+Sadurní i que els adjudicataris amb identificadors anonimitzats no es barregen.
+
 ## Llicència
 
 AGPL-3.0. Consulta el fitxer [LICENSE](LICENSE) per a més detalls.

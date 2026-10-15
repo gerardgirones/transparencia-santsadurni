@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { fetchCompanyDetail } from "@/lib/api";
+import { isAmbiguousCompanyId } from "@/lib/company-identity";
 import { formatCompactNumber, formatCompactShort, formatNumber, niceAxisTicks } from "@/lib/utils";
 
 export const size = {
@@ -16,6 +17,18 @@ interface Props {
 export default async function Image({ params }: Props) {
   const { id } = await Promise.resolve(params);
   const decodedId = decodeURIComponent(id);
+  // Image routes do not receive the name query parameter. A neutral card is
+  // safer than showing combined figures or invented zeros for a masked id.
+  if (isAmbiguousCompanyId(decodedId)) {
+    return new ImageResponse(
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: 80, width: "100%", height: "100%", background: "#f8fafc", color: "#0f172a" }}>
+        <div style={{ fontSize: 30, color: "#475569" }}>Transparència Sant Sadurní</div>
+        <div style={{ fontSize: 58, marginTop: 32 }}>Adjudicatari amb identificador anonimitzat</div>
+        <div style={{ fontSize: 28, marginTop: 28 }}>Consulta el nom i les dades a la fitxa del portal.</div>
+      </div>,
+      size
+    );
+  }
   const { company, yearly } = await fetchCompanyDetail(decodedId);
 
   const companyName = company?.denominacio_adjudicatari || decodedId;

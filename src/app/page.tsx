@@ -1,3 +1,4 @@
+import { buildCompanyHref } from "@/lib/company-identity";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -32,12 +33,12 @@ export const metadata: Metadata = {
   description:
     "Consulta la contractació pública de Sant Sadurní d'Anoia: contractes, subvencions, organismes i indicadors de transparència municipal amb dades oficials.",
   keywords: [
-    "contractes públics Catalunya",
-    "contractació pública Catalunya",
-    "adjudicacions públiques Catalunya",
-    "licitacions Catalunya",
-    "empreses adjudicatàries Catalunya",
-    "organismes contractants Catalunya",
+    "contractes públics Sant Sadurní",
+    "contractació pública Sant Sadurní",
+    "adjudicacions públiques Sant Sadurní",
+    "licitacions Sant Sadurní",
+    "empreses adjudicatàries Sant Sadurní",
+    "organismes contractants Sant Sadurní",
   ],
   alternates: {
     canonical: "/",
@@ -131,10 +132,10 @@ export default async function HomePage() {
       },
       {
         "@type": "DataCatalog",
-        name: "Observatori de contractació pública a Catalunya",
+        name: "Observatori de contractació pública de Sant Sadurní",
         url: SITE_URL,
         inLanguage: "ca",
-        about: "Contractació pública a Catalunya",
+        about: "Contractació pública de Sant Sadurní d’Anoia",
       },
     ],
   };
@@ -364,7 +365,7 @@ export default async function HomePage() {
                   <p className="mt-1 line-clamp-2 text-xs text-gray-600">
                     {c.identificacio_adjudicatari ? (
                       <Link
-                        href={`/empreses/${encodeURIComponent(c.identificacio_adjudicatari)}`}
+                        href={buildCompanyHref(c.identificacio_adjudicatari, c.denominacio_adjudicatari)}
                         className="hover:underline hover:text-indigo-600"
                       >
                         {c.denominacio_adjudicatari || "—"}
@@ -424,7 +425,7 @@ export default async function HomePage() {
                       <td className="px-4 py-3 text-gray-700" title={c.denominacio_adjudicatari || ""}>
                         {c.identificacio_adjudicatari ? (
                           <Link
-                            href={`/empreses/${encodeURIComponent(c.identificacio_adjudicatari)}`}
+                            href={buildCompanyHref(c.identificacio_adjudicatari, c.denominacio_adjudicatari)}
                             className="hover:underline hover:text-indigo-600"
                           >
                             {c.denominacio_adjudicatari || "—"}

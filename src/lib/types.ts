@@ -91,6 +91,9 @@ export interface CpvAggregation {
 }
 
 export interface ContractFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  awardee_name?: string;
   year?: string;
   tipus_contracte?: string;
   procediment?: string;

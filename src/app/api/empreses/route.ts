@@ -67,12 +67,12 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const data = await fetchCompanies(
-    offset,
-    DEFAULT_PAGE_SIZE,
-    search || undefined,
-    cpvFilters.length > 0 ? cpvFilters : undefined
-  );
+  const [data, total] = await Promise.all([
+    fetchCompanies(offset, DEFAULT_PAGE_SIZE, search || undefined, cpvFilters.length > 0 ? cpvFilters : undefined),
+    includeTotal
+      ? fetchCompaniesCount(search || undefined, cpvFilters.length > 0 ? cpvFilters : undefined)
+      : Promise.resolve(0),
+  ]);
 
   if (!includeTotal) {
     return NextResponse.json(
@@ -84,12 +84,6 @@ export async function GET(request: NextRequest) {
       }
     );
   }
-
-  const total = await fetchCompaniesCount(
-    search || undefined,
-    cpvFilters.length > 0 ? cpvFilters : undefined
-  );
-
   return NextResponse.json(
     { data, total },
     {
