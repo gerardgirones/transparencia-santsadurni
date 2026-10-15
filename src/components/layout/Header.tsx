@@ -12,11 +12,13 @@ const PRIMARY_NAV_ITEMS = [
   { href: "/subvencions", label: "Subvencions" },
   { href: "/contractes", label: "Contractes" },
   { href: "/transparencia", label: "Transparència" },
-  { href: "/organismes", label: "Organismes" },
-  { href: "/comunitat", label: "Comunitat" },
+  { href: "/plens", label: "Plens" },
+  { href: "/revisio", label: "Revisió" },
 ];
 
 const CONTACT_MENU_ITEMS = [
+  { href: "/organismes", label: "Organismes" },
+  { href: "/comunitat", label: "Comunitat" },
   { href: "/contacte", label: "Contacte" },
   { href: "/donacions", label: "Donacions" },
   { href: "/analisi", label: "Anàlisi" },
@@ -83,7 +85,7 @@ export default function Header() {
                 }`}
                 type="button"
               >
-                Contacte
+                Més
                 <span className="ml-1">▾</span>
               </button>
 

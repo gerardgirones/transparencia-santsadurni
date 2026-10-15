@@ -116,6 +116,7 @@ test("minor-contract chart uses one municipal grouped request and fills empty bu
     requests++;
     assertMunicipal(url);
     assert.equal(url.searchParams.get("$group"), "bucket");
+    assert.match(url.searchParams.get("$where"), /tipus_contracte in\('Serveis','Subministraments'\)/);
     return Response.json([{bucket:"2",total:"3"},{bucket:"30",total:"7"}]);
   });
   const buckets = await api.fetchThresholdDistribution();

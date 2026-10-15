@@ -35,7 +35,7 @@ const AWARDED_CONTRACT_WHERE =
   `upper(coalesce(denominacio_adjudicatari,'')) not in ${MISSING_TEXT_VALUES_SQL} AND upper(coalesce(identificacio_adjudicatari,'')) not in ${MISSING_TEXT_VALUES_SQL} AND ${CLEAN_AMOUNT_SENSE_FILTER} AND import_adjudicacio_sense IS NOT NULL AND import_adjudicacio_sense::number > 0`;
 const ANALYSIS_MIN_AMOUNT = 500;
 const ANALYSIS_BASE_SENSE_WHERE = `${CLEAN_AMOUNT_SENSE_FILTER} AND import_adjudicacio_sense IS NOT NULL AND import_adjudicacio_sense::number >= ${ANALYSIS_MIN_AMOUNT}`;
-const MINOR_15K_BASE_WHERE = `procediment='Contracte menor' AND ${ANALYSIS_BASE_SENSE_WHERE} AND import_adjudicacio_sense::number < 15000`;
+const MINOR_15K_BASE_WHERE = `procediment='Contracte menor' AND tipus_contracte in('Serveis','Subministraments') AND ${ANALYSIS_BASE_SENSE_WHERE} AND import_adjudicacio_sense::number < 15000`;
 const ORGAN_LOCAL_RELEVANCE_WHERE =
   "(upper(denominacio) like '%SANT SADURN%' AND upper(denominacio) like '%ANOIA%')";
 const MUNICIPAL_SCOPE_WHERE = `(
@@ -152,6 +152,38 @@ function buildLooseSearchCondition(search: string, fields: string[]): string {
 
 function soqlFetch<T>(params: Record<string, string>): Promise<T[]> {
   return socrataFetch<T>(SOCRATA_BASE_URL, {...params, $where: withMunicipalScope(params.$where)});
+}
+
+export type ReviewContract = Partial<Contract> & { source_row_id: string };
+
+/** Every published row for the council itself, including incomplete records.
+ * Do not reuse the award-only explorer: it hides the gaps this review checks.
+ */
+export async function fetchCouncilContractCatalog(): Promise<ReviewContract[]> {
+  const where = `upper(nom_organ)=upper('${MUNICIPAL_SCOPE_ORGAN.replace(/'/g, "''")}')`;
+  const count = await soqlFetch<{ total_catalog_rows: string }>({
+    $select: "count(*) as total_catalog_rows", $where: where,
+  });
+  const total = Number(count[0]?.total_catalog_rows);
+  if (!Number.isSafeInteger(total) || total < 0 || total > 100000) throw new Error("Invalid council catalogue count");
+  const rows: ReviewContract[] = [];
+  const ids = new Set<string>();
+  for (let offset = 0; offset < total; offset += 1000) {
+    const batch = await soqlFetch<ReviewContract>({
+      $select: ":id as source_row_id, nom_organ, codi_expedient, numero_lot, denominacio, tipus_contracte, procediment, fase_publicacio, resultat, identificacio_adjudicatari, denominacio_adjudicatari, import_adjudicacio_sense, data_adjudicacio_contracte, data_publicacio_anunci, codi_cpv, enllac_publicacio", $where: where,
+      $order: ":id ASC", $limit: "1000", $offset: String(offset),
+    });
+    if (!batch.length) throw new Error("Incomplete council contract catalogue");
+    for (const row of batch) {
+      if (!row.source_row_id || ids.has(row.source_row_id) || row.nom_organ?.trim().toUpperCase() !== MUNICIPAL_SCOPE_ORGAN.toUpperCase()) {
+        throw new Error("Invalid identity or scope in council contract catalogue");
+      }
+      ids.add(row.source_row_id);
+      rows.push(row);
+    }
+  }
+  if (rows.length !== total) throw new Error("Council contract catalogue changed or was truncated");
+  return rows;
 }
 
 // Dashboard stats

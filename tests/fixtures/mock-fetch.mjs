@@ -1,6 +1,7 @@
 // Opt-in fixtures for build:test and Playwright only. Production never imports
 // this module. Unit tests separately assert the real outgoing source filters.
 import { answer } from "./socrata.mjs";
+import { plenaryPdfFixture } from "./plenary-pdf.mjs";
 
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (input, options) => {
@@ -17,13 +18,20 @@ globalThis.fetch = async (input, options) => {
   if (url.hostname === "dadesobertes.seu-e.cat") {
     const filters = JSON.parse(url.searchParams.get("filters") || "{}");
     if (!Object.values(filters).map(String).includes("824010007")) throw new Error("An AOC request escaped municipal scope");
+    if (url.searchParams.get("resource_id") === "b5d370d0-7916-48b6-8a69-3c7fa62a1467") {
+      return Response.json({success:true,result:{total:2,records:[{_id:1,CODI_ACTA:"ple-2026",DATA_ACORD:"2026-05-26T00:00:00",TIPUS:"Ordinària","ENLLAÇ_ACTA":"https://media.seu-e.cat/acteca/824010007/2026/ple-2026/acta.pdf"},{_id:2,CODI_ACTA:"ple-2025",DATA_ACORD:"2025-12-16T00:00:00",TIPUS:"Ordinària","ENLLAÇ_ACTA":"https://media.seu-e.cat/acteca/824010007/2025/ple-2025/acta.pdf"}]}});
+    }
     return Response.json({success:true,result:{records:[],total:0}});
+  }
+  if (url.hostname === "media.seu-e.cat" && url.pathname.startsWith("/acteca/824010007/")) {
+    return new Response(plenaryPdfFixture(),{headers:{"Content-Type":"application/pdf"}});
   }
   if (url.hostname === "www.subvenciones.gob.es") {
     if (url.pathname.endsWith("/busqueda")) {
       if (url.searchParams.get("organos") !== "413") throw new Error("A BDNS request escaped municipal scope");
       if (url.pathname.includes("concesiones")) {
-        return Response.json({totalElements:1,content:[{id:1,fechaConcesion:"2025-12-11",convocatoria:"SUBVENCIÓ CULTURAL DE MOSTRA",beneficiario:"ENTITAT DE MOSTRA",importe:1000,numeroConvocatoria:"933923"}]});
+        const grant = {fechaConcesion:"2025-12-11",convocatoria:"SUBVENCIÓ CULTURAL DE MOSTRA",beneficiario:"ENTITAT DE MOSTRA",importe:1000,numeroConvocatoria:"933923"};
+        return Response.json({totalElements:2,content:[{id:1,...grant},{id:2,...grant}]});
       }
       return Response.json({totalElements:1,content:[{numeroConvocatoria:"933923",descripcionLeng:"CONVOCATÒRIA MUNICIPAL DE MOSTRA",fechaRecepcion:"2026-10-07"}]});
     }

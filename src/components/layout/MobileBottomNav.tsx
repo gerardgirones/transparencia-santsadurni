@@ -8,7 +8,7 @@ const TABS = [
   { href: "/contractes", label: "Contractes", icon: "M7 3h7l5 5v13H7Z M14 3v5h5 M10 12h6 M10 16h6" },
   { href: "/subvencions", label: "Subvencions", icon: "M4 8h16v13H4Z M2 5h20v3H2Z M12 5v16 M12 5C4 5 7-2 12 5Zm0 0c8 0 5-7 0 0Z" },
   { href: "/transparencia", label: "Transparència", icon: "M3 21h18 M5 21V10 M19 21V10 M9 21v-6h6v6 M2 10l10-6 10 6Z" },
-  { href: "/empreses", label: "Empreses", icon: "M4 21V5h10v16 M14 10h5v11 M8 8h2 M8 12h2 M8 16h2 M3 21h18" },
+  { href: "/plens", label: "Plens", icon: "M4 4h16v12H4Z M8 20h8 M12 16v4 M8 8h8 M8 12h5" },
 ];
 
 export default function MobileBottomNav() {

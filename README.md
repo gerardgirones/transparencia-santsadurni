@@ -22,6 +22,23 @@ En aquesta instància, l'experiència i els filtres es prioritzen per dades del 
 - **Explorador de contractes** amb filtres per any, tipus, procediment, import i òrgan de contractació
 - **Anàlisi** del llindar de contractes menors (15.000 EUR), distribucions per tipus i procediment
 
+## Seguiment municipal
+
+- `/plens`: catàleg complet d'actes amb filtre per any. El resum es genera en
+  obrir una acta, sense prelectura automàtica de tots els PDF ni serveis d'IA de
+  pagament. Recull punts, votacions identificades i extractes amb referències a
+  les pàgines. Els formats no reconeguts mostren l'enllaç a l'acta sense inventar
+  contingut. La lectura es limita als PDF municipals del domini oficial admès.
+- `/revisio`: catàlegs complets dels registres de contractació de l'Ajuntament
+  i les concessions BDNS de l'òrgan 413. Les descàrregues incompletes no generen
+  totals ni avisos. Cada avís inclou motiu, límits i registres amb les seves fonts.
+- `/revisio/metodologia`: regles i límits del cribratge. Es diferencien les mancances
+  de dades dels patrons que necessiten revisió documental. No certifica expedients
+  ni atribueix frau o mala praxi. Les convocatòries no es barregen amb les concessions.
+
+Aquesta primera fase és informativa i reproduïble. El contrast amb els expedients
+íntegres, les resolucions i les justificacions correspon a una fase posterior.
+
 ## Stack tecnològic
 
 - [Next.js](https://nextjs.org) 16 (App Router, Server Components)

@@ -16,6 +16,8 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-gray-900 mb-2">Navegació</h3>
             <ul className="space-y-1 text-sm">
+              <li><Link href="/plens" className="text-gray-600 hover:text-gray-900">Resums dels plens</Link></li>
+              <li><Link href="/revisio" className="text-gray-600 hover:text-gray-900">Revisió ciutadana</Link></li>
               <li>
                 <Link href="/empreses" prefetch className="text-gray-600 hover:text-gray-900">
                   Empreses
