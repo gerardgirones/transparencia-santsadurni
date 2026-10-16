@@ -36,8 +36,22 @@ En aquesta instància, l'experiència i els filtres es prioritzen per dades del 
   de dades dels patrons que necessiten revisió documental. No certifica expedients
   ni atribueix frau o mala praxi. Les convocatòries no es barregen amb les concessions.
 
-Aquesta primera fase és informativa i reproduïble. El contrast amb els expedients
-íntegres, les resolucions i les justificacions correspon a una fase posterior.
+- `/revisio/cas/[id]`: segona fase de contrast de publicacions. Consulta només les
+  fonts dels avisos existents, valida la identitat municipal i cerca l'expedient
+  i lot exactes dins de les publicacions agregades PSCP en JSON. Compara imports,
+  valor estimat, dates locals, adjudicatari, CPV i tipus. Els formats antics XML,
+  individuals o ambigus queden pendents de lectura manual. Inclou les fases
+  publicades del mateix expedient i una fitxa descarregable amb fonts i qüestions
+  pendents. Per a subvencions aporta context de la convocatòria BDNS, sense
+  presentar-lo com una comprovació de la concessió o del pagament.
+
+El contrast consulta com a màxim quatre publicacions i quatre convocatòries per
+visita, amb quinze segons per a l'etapa de consulta, límit de 5 MiB per resposta,
+sense redireccions i memòria cau de sis hores. No es predescarreguen les fitxes.
+Les comparacions són informatives: el catàleg i la publicació poden compartir
+origen. Els expedients íntegres, les resolucions i les justificacions internes
+continuen pendents de contrast. La descàrrega recalcula la fitxa; no és un arxiu
+immutable ni una certificació dels expedients.
 
 ## Stack tecnològic
 

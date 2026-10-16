@@ -170,7 +170,7 @@ export async function fetchCouncilContractCatalog(): Promise<ReviewContract[]> {
   const ids = new Set<string>();
   for (let offset = 0; offset < total; offset += 1000) {
     const batch = await soqlFetch<ReviewContract>({
-      $select: ":id as source_row_id, nom_organ, codi_expedient, numero_lot, denominacio, tipus_contracte, procediment, fase_publicacio, resultat, identificacio_adjudicatari, denominacio_adjudicatari, import_adjudicacio_sense, data_adjudicacio_contracte, data_publicacio_anunci, codi_cpv, enllac_publicacio", $where: where,
+      $select: ":id as source_row_id, nom_organ, codi_expedient, numero_lot, denominacio, tipus_contracte, procediment, fase_publicacio, resultat, identificacio_adjudicatari, denominacio_adjudicatari, import_adjudicacio_sense, valor_estimat_contracte, data_adjudicacio_contracte, data_publicacio_anunci, codi_cpv, enllac_publicacio", $where: where,
       $order: ":id ASC", $limit: "1000", $offset: String(offset),
     });
     if (!batch.length) throw new Error("Incomplete council contract catalogue");

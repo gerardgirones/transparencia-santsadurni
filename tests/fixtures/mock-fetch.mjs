@@ -1,6 +1,6 @@
 // Opt-in fixtures for build:test and Playwright only. Production never imports
 // this module. Unit tests separately assert the real outgoing source filters.
-import { answer } from "./socrata.mjs";
+import { answer, reviewPublicationFixture } from "./socrata.mjs";
 import { plenaryPdfFixture } from "./plenary-pdf.mjs";
 
 const realFetch = globalThis.fetch;
@@ -35,7 +35,11 @@ globalThis.fetch = async (input, options) => {
       }
       return Response.json({totalElements:1,content:[{numeroConvocatoria:"933923",descripcionLeng:"CONVOCATÒRIA MUNICIPAL DE MOSTRA",fechaRecepcion:"2026-10-07"}]});
     }
-    return Response.json({codigoBDNS:"933923",presupuestoTotal:19000,tipoConvocatoria:"Concurrencia competitiva"});
+    return Response.json({codigoBDNS:"933923",organo:{nivel2:"SANT SADURNÍ D'ANOIA",nivel3:"AYUNTAMIENTO DE SANT SADURNÍ D'ANOIA"},descripcionLeng:"CONVOCATÒRIA MUNICIPAL DE MOSTRA",presupuestoTotal:19000,tipoConvocatoria:"Concurrencia competitiva",urlBasesReguladoras:"https://bop.diba.cat/bases-de-mostra"});
+  }
+  if (url.hostname === "contractaciopublica.cat") {
+    if (url.pathname === "/portal-api/documents-publicacio/json/300700407") return Response.json(reviewPublicationFixture());
+    throw new Error("Unexpected PSCP fixture request");
   }
   if (["seu-e.cat", "www.santsadurni.cat", "santsadurni.cat", "bop.diba.cat"].includes(url.hostname)) {
     // Official documents are optional sections; exercise their unavailable state.

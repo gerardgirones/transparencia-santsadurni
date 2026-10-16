@@ -40,7 +40,7 @@ function contractFixture(i) {
   const day = 1 + (i % 27);
   const date = `${year}-${pad(month, 2)}-${pad(day, 2)}T00:00:00.000`;
   const isUte = i % 9 === 4;
-  const amount = 1000 + ((i * 7919) % 300000);
+  const amount = i === 20 ? 14950 : 1000 + ((i * 7919) % 300000);
   return {
     source_row_id: `row-mock-${i}`,
     codi_expedient: `EXP-${year}-${pad(i, 4)}`,
@@ -69,12 +69,21 @@ function contractFixture(i) {
     pressupost_licitacio_amb: amount * 1.1 * 1.21,
     valor_estimat_contracte: amount * 1.2,
     resultat: "Adjudicat",
-    enllac_publicacio: i === 0 ? "" : { url: `https://contractaciopublica.example/exp/${i}` },
+    enllac_publicacio: i === 0 ? "" : { url: i === 20 ? "https://contractaciopublica.cat/ca/detall-publicacio/11111111-2222-3333-4444-555555555555/300700407" : `https://contractaciopublica.example/exp/${i}` },
     es_agregada: "No",
   };
 }
 
 const CONTRACTS = Array.from({ length: 240 }, (_, i) => contractFixture(i));
+
+export function reviewPublicationFixture() {
+  const row = contractFixture(20);
+  return {idExpedient:"11111111-2222-3333-4444-555555555555",organ:{nom:"Ajuntament de Sant Sadurní d'Anoia",nif:"P0824000D"},dataPublicacioReal:"2024-10-01T10:00:00Z",
+    publicacio:{expedientId:"11111111-2222-3333-4444-555555555555",dadesBasiquesPublicacio:{publicacioAgregada:true,denominacio:{ca:"PUBLICACIÓ TRIMESTRAL DE MOSTRA"}},dadesPublicacio:{contractesAgregada:[{
+      expedient:row.codi_expedient,nomAdjudicatari:row.denominacio_adjudicatari,nifAdjudicatari:row.identificacio_adjudicatari,importAdjudicacioSenseIva:14950,vec:row.valor_estimat_contracte,
+      dataAdjudicacio:"2024-09-20T22:00:00Z",tipusContracte:{ca:row.tipus_contracte},codiCpv:{codi:row.codi_cpv},
+    }]}}};
+}
 
 function splitTopLevel(expr) {
   const parts = [];

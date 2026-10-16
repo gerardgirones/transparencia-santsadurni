@@ -48,3 +48,39 @@ test("new civic pages fit on the phone and are reachable from navigation", async
   await expect(page.getByRole("heading",{level:1})).toHaveText("Revisió ciutadana");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+test("a review case compares the exact publication and exports its sources", async ({page}) => {
+  await page.goto("/revisio?section=contractes&kind=revisio");
+  await page.getByRole("link",{name:"Obre la fitxa i contrasta les fonts →"}).first().click();
+  await expect(page.getByRole("heading",{level:1})).toHaveText("Import proper al llindar de referència");
+  await expect(page.getByText("Publicació contrastada",{exact:true})).toBeVisible();
+  await expect(page.getByText("PUBLICACIÓ TRIMESTRAL DE MOSTRA",{exact:false})).toBeVisible();
+  await expect(page.locator("dd p").filter({hasText:"2024-09-21"})).toHaveCount(2);
+  await expect(page.getByText("Difereix",{exact:true})).toHaveCount(0);
+  const downloadPromise=page.waitForEvent("download");
+  await page.getByRole("link",{name:"Descarrega la fitxa"}).click();
+  const download=await downloadPromise;
+  expect(download.suggestedFilename()).toBe("fitxa-revisio.txt");
+  const response=await page.request.get((await page.getByRole("link",{name:"Descarrega la fitxa"}).getAttribute("href"))!);
+  expect(response.status()).toBe(200);
+  expect(await response.text()).toContain("https://contractaciopublica.cat/portal-api/documents-publicacio/json/300700407");
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({path:test.info().outputPath("fitxa-contrast.png"),fullPage:true});
+});
+
+test("grant cases show call context without claiming to verify the award or payment", async ({page}) => {
+  await page.goto("/revisio?section=subvencions");
+  await page.getByRole("link",{name:"Obre la fitxa i contrasta les fonts →"}).click();
+  await expect(page.getByRole("heading",{level:1})).toHaveText("Concessions coincidents dins d’una convocatòria");
+  await expect(page.getByText("Pressupost de la convocatòria",{exact:true})).toBeVisible();
+  await expect(page.getByText("19.000,00 €",{exact:true})).toBeVisible();
+  await expect(page.getByText(/La resolució de les concessions continua pendent de lectura/)).toBeVisible();
+  await expect(page.getByText("Publicació contrastada",{exact:true})).toHaveCount(0);
+});
+
+test("unknown review cases are not treated as resolved",async ({page,request})=>{
+  await page.goto("/revisio/cas/does-not-exist");
+  await expect(page.getByRole("heading",{level:1})).toHaveText("Avís no disponible");
+  await expect(page.getByText(/això no acredita que l’expedient estigui resolt/)).toBeVisible();
+  expect((await request.get("/api/revisio/does-not-exist")).status()).toBe(404);
+});
