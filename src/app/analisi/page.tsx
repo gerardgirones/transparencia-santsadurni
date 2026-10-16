@@ -1,3 +1,4 @@
+import CivicTools from "@/components/transparency/CivicTools";
 import { loadData } from "@/lib/data-result";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -133,7 +134,7 @@ export default async function AnalisiPage() {
       </div>
       <p className="text-gray-600 mb-4">
         Aquesta pàgina prioritza dues preguntes: si hi ha concentració de
-        contractes menors just per sota de 15.000 EUR i quin pes tenen els
+        contractes menors de serveis i subministraments just per sota de 15.000 EUR i quin pes tenen els
         contractes menors dins del conjunt de la contractació pública.
       </p>
       <div className="mb-10 rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -143,13 +144,14 @@ export default async function AnalisiPage() {
         </p>
       </div>
 
+      <CivicTools />
       {bandResult.unavailable ? <Unavailable label="el resum del llindar" /> : (
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">
           1) Senyal de risc al llindar dels 15.000 EUR
         </h2>
         <p className="text-gray-600 mb-5">
-          Monitoritzem explícitament el percentatge de contractes menors
+          Monitoritzem explícitament el percentatge de contractes menors de serveis i subministraments
           adjudicats entre 14.900 i 14.999,99 EUR (sense IVA).
         </p>
 
@@ -172,7 +174,7 @@ export default async function AnalisiPage() {
           <StatCard
             title="Menors analitzats"
             value={formatNumber(totalMinorUnder15k)}
-            subtitle="Contractes entre 500 i 14.999,99 EUR"
+            subtitle="Serveis i subministraments entre 500 i 14.999,99 EUR"
           />
           <StatCard
             title="Franja 14.900-14.999,99"

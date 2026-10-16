@@ -1,3 +1,4 @@
+import CivicTools from "@/components/transparency/CivicTools";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -237,6 +238,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
         </div>
       </section> : <Unavailable failed />}
 
+      <CivicTools />
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Subvencions recents</h2>
@@ -320,6 +322,7 @@ export default async function TransparenciaPage({ searchParams }: Props) {
 
         <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Actes de ple</h2>
+          <Link href="/plens" className="mt-2 inline-block text-sm text-indigo-700 underline">Llegir els resums dels plens →</Link>
           <Unavailable failed={plenaryResult.unavailable} />
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">

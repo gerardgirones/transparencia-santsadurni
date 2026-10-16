@@ -1505,6 +1505,18 @@ export async function fetchPlenaryMinutesCount(): Promise<number> {
   return total;
 }
 
+export const fetchPlenaryCatalog = cache(async (): Promise<TransparencyPlenaryMinute[]> => {
+  const records = await ckanFetchAll(AOC_RESOURCE_IDS.plenaryMinutes, {
+    CODI_ENS: Number(SANT_SADURNI_CODI_ENS),
+  });
+  return records.map(row => ({
+    codiActa: toStringValue(row.CODI_ACTA),
+    dataAcord: toStringValue(row.DATA_ACORD),
+    tipus: toStringValue(row.TIPUS),
+    enllacActa: toStringValue(row["ENLLAÇ_ACTA"] || row.ENLLA_ACTA),
+  })).sort((a, b) => b.dataAcord.localeCompare(a.dataAcord) || a.codiActa.localeCompare(b.codiActa));
+});
+
 export async function fetchTransparencySummary(): Promise<TransparencySummary> {
   const [contracts, subsidies, agreements, plenary, budget] = await Promise.all([
     loadData("contractes", () => Promise.all([fetchTotalContracts(), fetchTotalAmount()])),

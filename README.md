@@ -22,6 +22,37 @@ En aquesta instància, l'experiència i els filtres es prioritzen per dades del 
 - **Explorador de contractes** amb filtres per any, tipus, procediment, import i òrgan de contractació
 - **Anàlisi** del llindar de contractes menors (15.000 EUR), distribucions per tipus i procediment
 
+## Seguiment municipal
+
+- `/plens`: catàleg complet d'actes amb filtre per any. El resum es genera en
+  obrir una acta, sense prelectura automàtica de tots els PDF ni serveis d'IA de
+  pagament. Recull punts, votacions identificades i extractes amb referències a
+  les pàgines. Els formats no reconeguts mostren l'enllaç a l'acta sense inventar
+  contingut. La lectura es limita als PDF municipals del domini oficial admès.
+- `/revisio`: catàlegs complets dels registres de contractació de l'Ajuntament
+  i les concessions BDNS de l'òrgan 413. Les descàrregues incompletes no generen
+  totals ni avisos. Cada avís inclou motiu, límits i registres amb les seves fonts.
+- `/revisio/metodologia`: regles i límits del cribratge. Es diferencien les mancances
+  de dades dels patrons que necessiten revisió documental. No certifica expedients
+  ni atribueix frau o mala praxi. Les convocatòries no es barregen amb les concessions.
+
+- `/revisio/cas/[id]`: segona fase de contrast de publicacions. Consulta només les
+  fonts dels avisos existents, valida la identitat municipal i cerca l'expedient
+  i lot exactes dins de les publicacions agregades PSCP en JSON. Compara imports,
+  valor estimat, dates locals, adjudicatari, CPV i tipus. Els formats antics XML,
+  individuals o ambigus queden pendents de lectura manual. Inclou les fases
+  publicades del mateix expedient i una fitxa descarregable amb fonts i qüestions
+  pendents. Per a subvencions aporta context de la convocatòria BDNS, sense
+  presentar-lo com una comprovació de la concessió o del pagament.
+
+El contrast consulta com a màxim quatre publicacions i quatre convocatòries per
+visita, amb quinze segons per a l'etapa de consulta, límit de 5 MiB per resposta,
+sense redireccions i memòria cau de sis hores. No es predescarreguen les fitxes.
+Les comparacions són informatives: el catàleg i la publicació poden compartir
+origen. Els expedients íntegres, les resolucions i les justificacions internes
+continuen pendents de contrast. La descàrrega recalcula la fitxa; no és un arxiu
+immutable ni una certificació dels expedients.
+
 ## Stack tecnològic
 
 - [Next.js](https://nextjs.org) 16 (App Router, Server Components)

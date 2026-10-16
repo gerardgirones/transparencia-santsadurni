@@ -40,8 +40,9 @@ function contractFixture(i) {
   const day = 1 + (i % 27);
   const date = `${year}-${pad(month, 2)}-${pad(day, 2)}T00:00:00.000`;
   const isUte = i % 9 === 4;
-  const amount = 1000 + ((i * 7919) % 300000);
+  const amount = i === 20 ? 14950 : 1000 + ((i * 7919) % 300000);
   return {
+    source_row_id: `row-mock-${i}`,
     codi_expedient: `EXP-${year}-${pad(i, 4)}`,
     denominacio: `Contracte de mostra número ${i} per a serveis de manteniment i suport`,
     objecte_contracte: `Objecte del contracte ${i}`,
@@ -68,12 +69,21 @@ function contractFixture(i) {
     pressupost_licitacio_amb: amount * 1.1 * 1.21,
     valor_estimat_contracte: amount * 1.2,
     resultat: "Adjudicat",
-    enllac_publicacio: { url: `https://contractaciopublica.example/exp/${i}` },
+    enllac_publicacio: i === 0 ? "" : { url: i === 20 ? "https://contractaciopublica.cat/ca/detall-publicacio/11111111-2222-3333-4444-555555555555/300700407" : `https://contractaciopublica.example/exp/${i}` },
     es_agregada: "No",
   };
 }
 
 const CONTRACTS = Array.from({ length: 240 }, (_, i) => contractFixture(i));
+
+export function reviewPublicationFixture() {
+  const row = contractFixture(20);
+  return {idExpedient:"11111111-2222-3333-4444-555555555555",organ:{nom:"Ajuntament de Sant Sadurní d'Anoia",nif:"P0824000D"},dataPublicacioReal:"2024-10-01T10:00:00Z",
+    publicacio:{expedientId:"11111111-2222-3333-4444-555555555555",dadesBasiquesPublicacio:{publicacioAgregada:true,denominacio:{ca:"PUBLICACIÓ TRIMESTRAL DE MOSTRA"}},dadesPublicacio:{contractesAgregada:[{
+      expedient:row.codi_expedient,nomAdjudicatari:row.denominacio_adjudicatari,nifAdjudicatari:row.identificacio_adjudicatari,importAdjudicacioSenseIva:14950,vec:row.valor_estimat_contracte,
+      dataAdjudicacio:"2024-09-20T22:00:00Z",tipusContracte:{ca:row.tipus_contracte},codiCpv:{codi:row.codi_cpv},
+    }]}}};
+}
 
 function splitTopLevel(expr) {
   const parts = [];
@@ -110,6 +120,7 @@ function extractEquality(where, field) {
 
 function valueFor(column, i, where) {
   const c = column.toLowerCase();
+  if (c === "total_catalog_rows") return String(CONTRACTS.filter(row => row.nom_organ === "Ajuntament de Sant Sadurní d'Anoia").length);
   if (c === "year") return String(2015 + i);
   if (c === "bucket") return String(i + 2);
   if (c.includes("date")) return `2025-0${1 + (i % 9)}-15T00:00:00.000`;
@@ -155,7 +166,7 @@ export function answer(query) {
 
   if (!select || (!group && !isAggregate(select))) {
     // Row query: contracts (or electes rows when asked for electes columns)
-    const cols = select ? outputColumns(select) : null;
+    const cols = select && !select.startsWith("*") ? outputColumns(select) : null;
     if (cols && cols.some((c) => ["codi_ens", "nom_regidor", "nom_complert"].includes(c))) {
       return Array.from({ length: Math.min(limit, 6) }, (_, i) =>
         Object.fromEntries(cols.map((c) => [c, valueFor(c, i, where)]))
